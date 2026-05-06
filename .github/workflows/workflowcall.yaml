@@ -1,0 +1,17 @@
+name: Multi-Environment Deployment
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+jobs:
+   job1:
+    runs-on: ubuntu-latest
+    steps:
+        - name: run
+          shell: bash
+          run: |
+            kubectl rollout undo deployment/myapp
+        - name: Deployment Tracking and Notifications
+          run: echo "Deployment completed"

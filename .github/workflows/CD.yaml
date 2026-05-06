@@ -1,0 +1,39 @@
+name: Multi-Environment Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Building the project"
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/develop' &&  github.ref == 'pull_request'
+    needs : Build
+    # environment: dev
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Deploying to Development"
+
+  deploy-staging:
+    if: github.ref == 'refs/heads/main'  &&  github.ref == 'pull_request'
+    needs : Build
+    # environment: staging
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Deploying to Staging"
+
+  deploy-production:
+    needs: deploy-staging
+    # environment: production
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "Deploying to Production"
