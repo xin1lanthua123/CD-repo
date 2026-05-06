@@ -22,7 +22,7 @@ jobs:
       - run: echo "Deploying to Development"
 
   deploy-staging:
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main'  &&  github.ref == 'pull_request'
     needs : Build
     # environment: staging
     runs-on: ubuntu-latest
