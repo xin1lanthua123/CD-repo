@@ -51,4 +51,3 @@ terragrunt.hcl.lock
 Thumbs.db
 .vscode/
 .idea/
-**.md
