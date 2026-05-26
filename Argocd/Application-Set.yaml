@@ -24,29 +24,36 @@ spec:
                 - region: nvirginia
                   clusterName: in-cluster
 
+                - region: mumbai
+                  clusterName: admin@cwvj-mumbai.ap-south-1.eksctl.io
+                  
+
+
           # Dimension 3: initial environment (explicit, simple)
-          - env:
+          - list:
               elements:
-                - env: ["dev","staging","prod"]
+                - env: dev
+                - env: staging
+                - env: prod
 
   template:
     metadata:
-      name: "{{.env}}-{{.path.basename}}-{{.region}}"
+      name: "{{.path.basename}}-{{.env}}-{{.region}}"
     spec:
       project: default
 
       source:
         repoURL: https://github.com/xin1lanthua123/CD-repo.git
         targetRevision: main
-        path: "{{.path.basename}}"
+        path: "{{.path.path}}"
         helm:
-          releaseName: "{{ .path.basename }}"
+          releaseName: "{{.path.basename}}-{{.env}}-{{.region}}"
           valueFiles:
-            - values-{{.env}}.yaml
+            - multi-env/values-{{.env}}.yaml
 
       destination:
         name: "{{.clusterName}}"
-        namespace: "{{.path.basename}}-ns"
+        namespace: "{{.path.basename}}-{{.env}}-{{.region}}-ns"
 
       syncPolicy:
         automated:
