@@ -1,0 +1,58 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: app1-matrix-clusters
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+
+  generators:
+    - matrix:
+        generators:
+          # Dimension 1: environments from Git
+          - git:
+              repoURL: https://github.com/xin1lanthua123/CD-repo.git
+              revision: main
+              directories:
+                - path: "helm/*"
+
+          # Dimension 2: clusters (explicit, simple)
+          - list:
+              elements:
+                - region: nvirginia
+                  clusterName: in-cluster
+
+          # Dimension 3: initial environment (explicit, simple)
+          - env:
+              elements:
+                - env: ["dev","staging","prod"]
+
+  template:
+    metadata:
+      name: "{{.env}}-{{.path.basename}}-{{.region}}"
+    spec:
+      project: default
+
+      source:
+        repoURL: https://github.com/xin1lanthua123/CD-repo.git
+        targetRevision: main
+        path: "{{.path.basename}}"
+        helm:
+          releaseName: "{{ .path.basename }}"
+          valueFiles:
+            - values-{{.env}}.yaml
+
+      destination:
+        name: "{{.clusterName}}"
+        namespace: "{{.path.basename}}-ns"
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - ApplyOutOfSyncOnly=true
