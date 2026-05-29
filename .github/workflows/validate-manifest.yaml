@@ -57,8 +57,8 @@ jobs:
                 helm template test $dir > /dev/null
             done
 
-  iac-scan:
-    name: " IaC Security Scan"
+  k8s-scan:
+    name: " K8s manifest scan"
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
