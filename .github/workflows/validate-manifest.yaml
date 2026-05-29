@@ -14,9 +14,7 @@ on:
   #  pull_request:
   #   branches:
   #     - main
-  #  push:
-  #   branches:
-  #       - ci/feature/*
+
 concurrency:
   group: gitops-${{ github.ref }}
   cancel-in-progress: true

@@ -1,0 +1,103 @@
+name: GitOps Deploy Events
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  deployment-event:
+    name: Deployment Event
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout GitOps Repo
+        uses: actions/checkout@v4
+
+      - name: Detect changed environments
+        id: changes
+        run: |
+          set -euo pipefail
+
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.sha }}"
+
+          echo "Before SHA: $BEFORE"
+          echo "After SHA: $AFTER"
+
+          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER")
+
+          echo "Changed files:"
+          echo "$CHANGED"
+
+          DEV_CHANGED=false
+          STAGING_CHANGED=false
+          PROD_CHANGED=false
+
+          if echo "$CHANGED" | grep -q "^environments/dev/"; then
+            DEV_CHANGED=true
+          fi
+
+          if echo "$CHANGED" | grep -q "^environments/staging/"; then
+            STAGING_CHANGED=true
+          fi
+
+          if echo "$CHANGED" | grep -q "^environments/prod/"; then
+            PROD_CHANGED=true
+          fi
+
+          echo "dev_changed=$DEV_CHANGED" >> $GITHUB_OUTPUT
+          echo "staging_changed=$STAGING_CHANGED" >> $GITHUB_OUTPUT
+          echo "prod_changed=$PROD_CHANGED" >> $GITHUB_OUTPUT
+
+      - name: DEV deployment detected
+        if: steps.changes.outputs.dev_changed == 'true'
+        run: |
+          echo "DEV deployment manifests updated"
+
+
+      - name: PROD deployment detected
+        if: steps.changes.outputs.prod_changed == 'true'
+        run: |
+          echo "PROD deployment manifests updated"
+
+      ##################################################
+      # OPTIONAL: ARGOCD STATUS CHECK
+      ##################################################
+
+      # - name: Install ArgoCD CLI
+      #   run: |
+      #     curl -sSL -o argocd \
+      #       https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+      #
+      #     chmod +x argocd
+      #     sudo mv argocd /usr/local/bin/
+
+      # - name: Login ArgoCD
+      #   run: |
+      #     argocd login ${{ secrets.ARGOCD_SERVER }} \
+      #       --username ${{ secrets.ARGOCD_USERNAME }} \
+      #       --password ${{ secrets.ARGOCD_PASSWORD }} \
+      #       --insecure
+
+      # - name: Wait for app sync
+      #   run: |
+      #     argocd app wait payment-dev --health --sync --timeout 300
+
+      ##################################################
+      # OPTIONAL: SLACK / DISCORD / TEAMS
+      ##################################################
+
+      # - name: Slack Notification
+      #   uses: slackapi/slack-github-action@v1.27.0
+      #   with:
+      #     payload: |
+      #       {
+      #         "text": "GitOps deployment manifests updated on main branch"
+      #       }
+      #   env:
+      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
