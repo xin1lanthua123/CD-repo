@@ -1,21 +1,32 @@
 name: Multi-Environment Deployment
 
 on:
-  push:
-    branches:
-      - dev
-      - staging
-      - main
-    tags:
-      - "[0-9]*.[0-9]*.[0-9]*"
-    paths:
-      - "Argocd/*"
+  workflow_dispatch:
+      inputs:
+        action:
+            description: " action"
+            required: true
+            default: "dev"
+            type: choice
+            options:
+            - dev
+            - staging
+            - prod
+  # push:
+  #   branches:
+  #     - dev
+  #     - staging
+  #     - main
+  #   tags:
+  #     - "[0-9]*.[0-9]*.[0-9]*"
+  #   paths:
+  #     - "Argocd/*"
 
-  pull_request:
-    branches:
-      - dev
-      - staging
-      - main
+  # pull_request:
+  #   branches:
+  #     - dev
+  #     - staging
+  #     - main
   
 concurrency:
   group: production-deployment

@@ -1,69 +1,74 @@
-# name: validate workflow
-# on:
-#    pull_request:
-#     branches:
-#       - main
-#    push:
-#     branches:
-#         - ci/feature/*
-# jobs:
-#   validate:
-#     runs-on: ubuntu-latest
+name: validate workflow
+on:
+  workflow_dispatch:
+      inputs:
+        action:
+            description: " action"
+            required: true
+            default: "dev"
+            type: choice
+            options:
+            - dev
+            - staging
+            - prod
+  #  pull_request:
+  #   branches:
+  #     - main
+  #  push:
+  #   branches:
+  #       - ci/feature/*
+concurrency:
+  group: gitops-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  yaml-lint:
+    runs-on: ubuntu-latest
 
-#     steps:
-#       - name: Checkout repository
-#         uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-#       - name: Run YAML Lint
-#         uses: ibiqlik/action-yamllint@v3
-#         with:
-#           file_or_dir: .
+      - name: Run YAML Lint
+        uses: ibiqlik/action-yamllint@v3
+        with:
+          file_or_dir: .
 
-#   helm-check:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v4
+  helm-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-#       - name: Setup Helm
-#         uses: azure/setup-helm@v4
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
 
-#       - name: Helm lint
-#         working-directory: helm
-#         run: |
-#             find . -name "Chart.yaml" | while read -r file ; do
-#                 dir=$(dirname "$file")
-#                 helm lint $dir
-#             done
+      - name: Helm lint
+        working-directory: helm
+        run: |
+            find . -name "Chart.yaml" | while read -r file ; do
+                dir=$(dirname "$file")
+                helm lint $dir
+            done
 
-#       - name: Helm template render check
-#         working-directory: helm
-#         run: |
-#             find . -name "Chart.yaml"  | while read -r file ; do
-#                 dir=$(dirname "$file")
-#                 helm template test $dir > /dev/null
-#             done
+      - name: Helm template render check
+        working-directory: helm
+        run: |
+            find . -name "Chart.yaml"  | while read -r file ; do
+                dir=$(dirname "$file")
+                helm template test $dir > /dev/null
+            done
 
-#   iac-scan:
-#     name: " IaC Security Scan"
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout code
-#         uses: actions/checkout@v4
+  iac-scan:
+    name: " IaC Security Scan"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-#       - name: Run Checkov on Terraform
-#         uses: bridgecrewio/checkov-action@v12
-#         with:
-#           directory: infra/
-#           framework: terraform
-#           soft_fail: false
-#           skip_check: CKV_AWS_39,CKV_AWS_58  # Public EKS endpoint (intentional for dev)
-#           output_format: cli
-
-#       - name: Run Checkov on Kubernetes manifests
-#         uses: bridgecrewio/checkov-action@v12
-#         with:
-#           directory: k8s/
-#           framework: kubernetes
-#           soft_fail: true  # Soft fail for K8s (some checks may not apply)
-#           output_format: cli
-
+      - name: Run Checkov on Kubernetes manifests
+        uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: k8s/
+          framework: kubernetes
+          soft_fail: true  # Soft fail for K8s (some checks may not apply)
+          output_format: cli
+ 
