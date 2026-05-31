@@ -53,7 +53,7 @@ spec:
 
       destination:
         name: "{{.clusterName}}"
-        namespace: "{{.path.basename}}-{{.env}}-{{.region}}-ns"
+        namespace: "boutique-app-{{.env}}-{{.region}}-ns"
 
       syncPolicy:
         automated:
