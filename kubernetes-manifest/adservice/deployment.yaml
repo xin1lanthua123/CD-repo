@@ -30,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: adservice  #DEV_IMAGE_TAG
+        image: 428289d #DEV_IMAGE_TAG
         ports:
         - containerPort: 9555
         env:
