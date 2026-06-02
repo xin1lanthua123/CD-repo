@@ -31,7 +31,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: cartservice
+        image: cartservice:latest #DEV_IMAGE_TAG #CARTSERVICE
         ports:
         - containerPort: 7070
         env:
