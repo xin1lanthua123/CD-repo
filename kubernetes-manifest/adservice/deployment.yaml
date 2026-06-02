@@ -30,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: productcatalogservice:4915d41 #DEV_IMAGE_TAG
+        image: cartservice:190e177 #DEV_IMAGE_TAG
         ports:
         - containerPort: 9555
         env:
