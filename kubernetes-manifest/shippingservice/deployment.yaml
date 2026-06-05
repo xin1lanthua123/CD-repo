@@ -29,7 +29,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: quanldl/shippingservice:latest #DEV_IMAGE_TAG #SHIPPINGSERVICE
+        image: quanldl/shippingservice:5174c1f #DEV_IMAGE_TAG #SHIPPINGSERVICE
         ports:
         - containerPort: 50051
         env:
