@@ -30,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: quanldl/recommendationservice:latest #DEV_IMAGE_TAG #RECOMMENDATIONSERVICE
+        image: quanldl/recommendationservice:5174c1f #DEV_IMAGE_TAG #RECOMMENDATIONSERVICE
         ports:
         - containerPort: 8080
         readinessProbe:
