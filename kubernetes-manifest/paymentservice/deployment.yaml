@@ -30,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: quanldl/paymentservice:latest #DEV_IMAGE_TAG #PAYMENTSERVICE
+        image: quanldl/paymentservice:5174c1f #DEV_IMAGE_TAG #PAYMENTSERVICE
         ports:
         - containerPort: 50051
         env:
