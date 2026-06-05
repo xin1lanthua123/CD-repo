@@ -29,7 +29,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: quanldl/checkoutservice:eb49d1f  #DEV_IMAGE_TAG #CHECKOUTSERVICE
+          image: quanldl/checkoutservice:5174c1f  #DEV_IMAGE_TAG #CHECKOUTSERVICE
           ports:
           - containerPort: 5050
           readinessProbe:
