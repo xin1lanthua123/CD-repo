@@ -5,6 +5,7 @@ metadata:
   labels:
     app: recommendationservice
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: recommendationservice
@@ -29,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: recommendationservice
+        image: quanldl/recommendationservice:latest #DEV_IMAGE_TAG #RECOMMENDATIONSERVICE
         ports:
         - containerPort: 8080
         readinessProbe:

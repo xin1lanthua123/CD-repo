@@ -5,6 +5,7 @@ metadata:
   labels:
     app: currencyservice
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: currencyservice
@@ -13,7 +14,7 @@ spec:
       labels:
         app: currencyservice
     spec:
-      serviceAccountName: currencyservice
+      # serviceAccountName: currencyservice
       terminationGracePeriodSeconds: 5
       securityContext:
         fsGroup: 1000
@@ -29,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: currencyservice
+        image: quanldl/currencyservice:latest #DEV_IMAGE_TAG #CURRENCYSERVICE
         ports:
         - name: grpc
           containerPort: 7000

@@ -6,6 +6,7 @@ metadata:
   labels:
     app: cartservice
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: cartservice
@@ -14,7 +15,6 @@ spec:
       labels:
         app: cartservice
     spec:
-      replicas: 2
       serviceAccountName: cartservice
       terminationGracePeriodSeconds: 5
       securityContext:

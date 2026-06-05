@@ -5,6 +5,7 @@ metadata:
   labels:
     app: checkoutservice
 spec:
+  replicas: 1
   selector:
     matchLabels:
       app: checkoutservice
@@ -28,7 +29,7 @@ spec:
                 - ALL
             privileged: false
             readOnlyRootFilesystem: true
-          image: checkoutservice
+          image: quanldl/checkoutservice:eb49d1f  #DEV_IMAGE_TAG #CHECKOUTSERVICE
           ports:
           - containerPort: 5050
           readinessProbe:
