@@ -30,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: quanldl/emailservice:latest  #DEV_IMAGE_TAG #EMAILSERVICE
+        image: quanldl/emailservice:5174c1f  #DEV_IMAGE_TAG #EMAILSERVICE
         ports:
         - containerPort: 8080
         env:
