@@ -30,7 +30,7 @@ spec:
               - ALL
           privileged: false
           readOnlyRootFilesystem: true
-        image: quanldl/currencyservice:a3f4d08 #DEV_IMAGE_TAG #CURRENCYSERVICE
+        image: quanldl/currencyservice:6006d03 #DEV_IMAGE_TAG #CURRENCYSERVICE
         ports:
         - name: grpc
           containerPort: 7000
