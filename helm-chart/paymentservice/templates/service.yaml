@@ -1,0 +1,17 @@
+{{- if .Values.paymentService.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.paymentService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.paymentService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.paymentService.name }}
+  ports:
+  - name: grpc
+    port: 50051
+    targetPort: 50051
+{{- end }}

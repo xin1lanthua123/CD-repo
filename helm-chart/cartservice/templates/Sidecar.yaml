@@ -1,0 +1,27 @@
+{{- if .Values.cartService.create }}
+{{- if .Values.sidecars.create }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: {{ .Values.cartService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ .Values.cartService.name }}
+  egress:
+  - hosts:
+    - istio-system/*
+    {{- if eq .Values.cartDatabase.type "redis" }}
+    {{- if .Values.cartDatabase.externalRedisTlsOrigination.enable }}
+    - ./{{ .Values.cartDatabase.externalRedisTlsOrigination.name }}.{{ .Release.Namespace }}
+    {{- else }}
+    - ./{{ .Values.cartDatabase.inClusterRedis.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- end }}
+    {{- end }}
+    {{- if .Values.opentelemetryCollector.create }}
+    - ./{{ .Values.opentelemetryCollector.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- end }}
+{{- end }}
+{{- end }}

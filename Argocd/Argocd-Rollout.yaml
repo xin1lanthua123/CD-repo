@@ -1,0 +1,54 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: myapp
+spec:
+  replicas: 5
+
+  selector:
+    matchLabels:
+      app: myapp
+
+  template:
+    metadata:
+      labels:
+        app: myapp
+    spec:
+      containers:
+      - name: myapp
+        image: myapp:1.0.0
+
+  strategy:
+    canary:
+      trafficRouting:
+        istio:
+          virtualService:
+            name: my-app-vs # Trỏ đúng tên VirtualService đã tạo ở trên
+            routes:
+            - primary-route # Khớp với tên "name: primary-route" trong VirtualService
+          destinationRule:
+            name: my-app-dr # Trỏ đúng tên DestinationRule đã tạo ở trên
+            canarySubsetName: canary # Tên của subset nhận bản cập nhật mới
+            stableSubsetName: stable # Tên của subset giữ bản chạy ổn định
+      # Các bước tăng % Traffic dần dần (Canary Steps)s
+      steps:
+      - setWeight: 10
+      - pause: {duration: 60s}
+
+      - setWeight: 30
+      - pause: {duration: 60s}
+
+      - setWeight: 50
+      - pause: {duration: 2m}
+
+      - setWeight: 70
+      - pause: {duration: 2m}
+
+      - setWeight: 90
+      - pause: {duration: 2m}
+
+      - setWeight: 100
+
+      analysis:
+        templates:
+        - templateName: success-rate

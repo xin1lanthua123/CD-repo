@@ -1,0 +1,31 @@
+
+{{- if .Values.paymentService.create }}
+{{- if .Values.authorizationPolicies.create }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.paymentService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.paymentService.name }}
+  rules:
+  - from:
+    - source:
+        principals:
+        {{- if .Values.serviceAccounts.create }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.checkoutService.name }}
+        {{- else }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/default
+        {{- end }}
+    to:
+    - operation:
+        paths:
+        - /hipstershop.PaymentService/Charge
+        methods:
+        - POST
+        ports:
+        - "50051"
+{{- end }}
+{{- end }}

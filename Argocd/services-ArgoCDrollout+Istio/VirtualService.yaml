@@ -1,0 +1,32 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: my-app-vs
+  namespace: my-app
+spec:
+  hosts:
+  - "://example.com" # Hoặc dùng "*" nếu chạy nội bộ cluster
+  gateways:
+  - mesh # Cho phép giao tiếp nội bộ trong mesh
+  # - my-istio-gateway (Bỏ comment nếu muốn nhận traffic từ ngoài Internet vào)
+  http:
+  - name: primary-route # Đặt tên rõ ràng để Argo Rollouts tìm thấy và sửa đổi
+    route:
+    - destination:
+        host: my-app-service
+        subset: stable
+      weight: 100 # Trạng thái ban đầu: 100% vào bản cũ stable
+    - destination:
+        host: my-app-service
+        subset: canary
+      weight: 0   # Trạng thái ban đầu: 0% vào bản mới canary
+     # ===== RESILIENCE =====
+
+    # Timeout (giới hạn thời gian xử lý request)
+    timeout: 5s
+
+    # Retry (chỉ retry khi lỗi transient)
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
+      retryOn: 5xx,gateway-error,connect-failure,refused-stream

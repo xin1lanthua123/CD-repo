@@ -1,0 +1,65 @@
+{{- if .Values.adService.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.adService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.adService.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.adService.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.adService.name }}
+    spec:
+      {{- if .Values.serviceAccounts.create }}
+      serviceAccountName: {{ .Values.adService.name }}
+      {{- else }}
+      serviceAccountName: default
+      {{- end }}
+      terminationGracePeriodSeconds: 10
+      {{- if .Values.imagePullPolicy.enable }}
+      imagePullPolicy: {{ .Values.imagePullPolicy.type }}
+      {{- end }}
+      {{- if .Values.securityContext.enable }}
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        {{- if .Values.seccompProfile.enable }}
+        seccompProfile:
+          type: {{ .Values.seccompProfile.type }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: server
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          privileged: false
+          capabilities:
+            drop:
+              - ALL
+        image: {{ .Values.images.adservice.repository }}:{{ .Values.images.adservice.tag | default .Chart.AppVersion }}
+        ports:
+        - containerPort: 9555
+        env:
+        - name: PORT
+          value: "9555"
+        resources:
+          {{- toYaml .Values.adService.resources | nindent 10 }}
+        readinessProbe:
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          grpc:
+            port: 9555
+        livenessProbe:
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          grpc:
+            port: 9555
+{{- end }}

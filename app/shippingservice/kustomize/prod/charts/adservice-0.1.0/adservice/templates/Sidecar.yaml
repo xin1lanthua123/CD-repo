@@ -1,0 +1,18 @@
+{{- if .Values.sidecars.create }}
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: {{ .Values.adService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ .Values.adService.name }}
+  egress:
+  - hosts:
+    - istio-system/*
+    {{- if .Values.opentelemetryCollector.create }}
+    - ./{{ .Values.opentelemetryCollector.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- end }}
+{{- end }}

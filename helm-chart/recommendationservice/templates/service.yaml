@@ -1,0 +1,17 @@
+{{- if .Values.recommendationService.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.recommendationService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.recommendationService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.recommendationService.name }}
+  ports:
+  - name: grpc
+    port: 8080
+    targetPort: 8080
+{{- end }}

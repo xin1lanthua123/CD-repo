@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+helmCharts:
+  - name: adservice
+    releaseName: adservice
+    repo: oci://ghcr.io/xin1lanthua123/helm
+    version: 0.1.0
+    namespace: dev
+    valuesFile: values.yaml

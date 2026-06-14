@@ -21,20 +21,21 @@ spec:
           # Dimension 2: clusters (explicit, simple)
           - list:
               elements:
-                - region: nvirginia
+                - env: dev
+                  region: nvirginia
                   clusterName: in-cluster
 
-                - region: mumbai
+                - env: prod
+                  region: mumbai
                   clusterName: admin@cwvj-mumbai.ap-south-1.eksctl.io
                   
 
 
-          # Dimension 3: initial environment (explicit, simple)
-          - list:
-              elements:
-                - env: dev
-                - env: staging
-                - env: prod
+          # # Dimension 3: initial environment (explicit, simple)
+          # - list:
+          #     elements:
+          #       - env: dev
+          #       - env: prod
 
   template:
     metadata:
@@ -47,19 +48,19 @@ spec:
         targetRevision: main
         path: "{{.path.path}}"
         helm:
-          releaseName: "{{.path.basename}}-{{.env}}-{{.region}}"
+          releaseName: "{{.path.basename}}-{{.env}}"
           valueFiles:
             - multi-env/values-{{.env}}.yaml
 
       destination:
         name: "{{.clusterName}}"
-        namespace: "boutique-app-{{.env}}-{{.region}}-ns"
+        namespace: "boutique-app-{{.env}}-ns"
 
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
+          - Validate=true
           - CreateNamespace=true
           - PruneLast=true
-          - ApplyOutOfSyncOnly=true

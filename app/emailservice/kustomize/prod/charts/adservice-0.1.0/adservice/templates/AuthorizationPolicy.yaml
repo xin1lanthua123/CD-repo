@@ -1,0 +1,28 @@
+{{- if .Values.authorizationPolicies.create }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.adService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.adService.name }}
+  rules:
+  - from:
+    - source:
+        principals:
+        {{- if .Values.serviceAccounts.create }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.frontend.name }}
+        {{- else }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/default
+        {{- end }}
+    to:
+    - operation:
+        paths:
+        - /hipstershop.AdService/GetAds
+        methods:
+        - POST
+        ports:
+        - "9555"
+{{- end }}

@@ -1,0 +1,34 @@
+
+{{- if .Values.currencyService.create }}
+{{- if .Values.authorizationPolicies.create }}
+---
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.currencyService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.currencyService.name }}
+  rules:
+  - from:
+    - source:
+        principals:
+        {{- if .Values.serviceAccounts.create }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.frontend.name }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.checkoutService.name }}
+        {{- else }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/default
+        {{- end }}
+    to:
+    - operation:
+        paths:
+        - /hipstershop.CurrencyService/Convert
+        - /hipstershop.CurrencyService/GetSupportedCurrencies
+        methods:
+        - POST
+        ports:
+        - "7000"
+{{- end }}
+{{- end }}

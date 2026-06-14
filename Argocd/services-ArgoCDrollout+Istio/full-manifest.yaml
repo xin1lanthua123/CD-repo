@@ -1,0 +1,105 @@
+# -------------------------------------------------------------
+# 1. KUBERNETES SERVICE (Chỉ dùng 1 Service duy nhất)
+# -------------------------------------------------------------
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-app-service
+  namespace: my-app
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  selector:
+    # LƯU Ý: KHÔNG đưa label "version" vào đây. 
+    # Label version sẽ do Istio DestinationRule quản lý.
+    app: my-app
+---
+# -------------------------------------------------------------
+# 2. ISTIO DESTINATION RULE (Định nghĩa Subsets dựa trên Label Pod)
+# -------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: my-app-dr
+  namespace: my-app
+spec:
+  host: my-app-service # Trỏ tới K8s Service ở trên
+  subsets:
+  - name: stable
+    labels:
+      rollouts-pod-template-hash: stable # Argo Rollouts sẽ tự động quản lý label này
+  - name: canary
+    labels:
+      rollouts-pod-template-hash: canary # Argo Rollouts sẽ tự động quản lý label này
+---
+# -------------------------------------------------------------
+# 3. ISTIO VIRTUAL SERVICE (Nơi cấu hình chia % traffic thực tế)
+# -------------------------------------------------------------
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: my-app-vs
+  namespace: my-app
+spec:
+  hosts:
+  - "://example.com" # Hoặc dùng "*" nếu chạy nội bộ cluster
+  gateways:
+  - mesh # Cho phép giao tiếp nội bộ trong mesh
+  # - my-istio-gateway (Bỏ comment nếu muốn nhận traffic từ ngoài Internet vào)
+  http:
+  - name: primary-route # Đặt tên rõ ràng để Argo Rollouts tìm thấy và sửa đổi
+    route:
+    - destination:
+        host: my-app-service
+        subset: stable
+      weight: 100 # Trạng thái ban đầu: 100% vào bản cũ stable
+    - destination:
+        host: my-app-service
+        subset: canary
+      weight: 0   # Trạng thái ban đầu: 0% vào bản mới canary
+---
+# -------------------------------------------------------------
+# 4. ARGO ROLLOUT (Thay thế hoàn toàn cho Deployment thông thường)
+# -------------------------------------------------------------
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: my-app-rollout
+  namespace: my-app
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: my-app
+  strategy:
+    canary:
+      # Liên kết cấu hình Traffic Routing tới Istio Subsets
+      trafficRouting:
+        istio:
+          virtualService:
+            name: my-app-vs # Trỏ đúng tên VirtualService đã tạo ở trên
+            routes:
+            - primary-route # Khớp với tên "name: primary-route" trong VirtualService
+          destinationRule:
+            name: my-app-dr # Trỏ đúng tên DestinationRule đã tạo ở trên
+            canarySubsetName: canary # Tên của subset nhận bản cập nhật mới
+            stableSubsetName: stable # Tên của subset giữ bản chạy ổn định
+      # Các bước tăng % Traffic dần dần (Canary Steps)
+      steps:
+      - setWeight: 10   # Cho 10% traffic chạy thử vào Canary
+      - pause: { duration: 5m } # Dừng lại 5 phút để theo dõi log/metrics
+      - setWeight: 50   # Tăng lên 50% traffic
+      - pause: { duration: 10m }
+                        # Sau đó nếu không có lỗi, Argo tự động lên 100% và kết thúc
+  template:
+    metadata:
+      labels:
+        app: my-app # Label này phải khớp với K8s Service selector
+    spec:
+      containers:
+      - name: my-app-container
+        image: argoproj/rollouts-demo:blue # Khi bạn cập nhật tag image ở đây (ví dụ qua ArgoCD), Canary sẽ bắt đầu kích hoạt
+        ports:
+        - containerPort: 8080

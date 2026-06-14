@@ -1,0 +1,71 @@
+{{- if .Values.cartService.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.cartService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.cartService.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.cartService.name }}
+  template:
+    metadata:
+      {{- if .Values.cartDatabase.externalRedisTlsOrigination.enable }}
+      annotations:
+        sidecar.istio.io/userVolumeMount: '[{"name": "{{ .Values.cartDatabase.externalRedisTlsOrigination.name }}", "mountPath": "/etc/certs", "readonly": true}]'
+        sidecar.istio.io/userVolume: '[{"name": "{{ .Values.cartDatabase.externalRedisTlsOrigination.name }}", "secret": {"secretName": "{{ .Values.cartDatabase.externalRedisTlsOrigination.name }}"}}]'
+        proxy.istio.io/config: '{"holdApplicationUntilProxyStarts": true}'
+      {{- end }}
+      labels:
+        app: {{ .Values.cartService.name }}
+    spec:
+      {{- if .Values.serviceAccounts.create }}
+      serviceAccountName: {{ .Values.cartService.name }}
+      {{- else }}
+      serviceAccountName: default
+      {{- end }}
+      terminationGracePeriodSeconds: 5
+      {{- if .Values.securityContext.enable }}
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+      {{- end }}
+        {{- if .Values.seccompProfile.enable }}
+        seccompProfile:
+          type: {{ .Values.seccompProfile.type }}
+        {{- end }}
+      containers:
+      - name: server
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+        image: {{ .Values.images.cartservice.repository }}:{{ .Values.images.cartservice.tag | default .Chart.AppVersion }}
+        ports:
+        - containerPort: 7070
+        env:
+        {{- if eq .Values.cartDatabase.type "spanner" }}
+        - name: SPANNER_CONNECTION_STRING
+        {{- else }}
+        - name: REDIS_ADDR
+        {{- end }}
+          value: {{ .Values.cartDatabase.connectionString | quote }}
+        resources:
+          {{- toYaml .Values.cartService.resources | nindent 10 }}
+        readinessProbe:
+          initialDelaySeconds: 15
+          grpc:
+            port: 7070
+        livenessProbe:
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          grpc:
+            port: 7070
+{{- end }}

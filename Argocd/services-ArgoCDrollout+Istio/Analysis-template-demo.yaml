@@ -1,0 +1,38 @@
+yamlapiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: http-error-rate-analysis
+  namespace: my-app
+spec:
+  # Khai báo các biến đầu vào để tái sử dụng mẫu này cho nhiều service khác nhau
+  args:
+  - name: service-name
+  - name: namespace-name
+  metrics:
+  - name: success-rate
+    interval: 30s    # Cứ mỗi 30 giây sẽ chạy câu lệnh PromQL một lần
+    successCondition: result[0] < 0.01 # Điều kiện THÀNH CÔNG: Tỷ lệ lỗi phải dưới 1% (0.01)
+    failureLimit: 2  # Cho phép lỗi tối đa 2 lần liên tiếp, lần thứ 3 sẽ kích hoạt ROLLBACK ngay lập tức
+    provider:
+      prometheus:
+        address: http://cluster.local # Điền URL Prometheus nội bộ của bạn
+        query: |
+          sum(
+            rate(istio_requests_total{
+              reporter="destination",
+              destination_workload_namespace="{{args.namespace-name}}",
+              destination_service_name=~"{{args.service-name}}.*",
+              response_code=~"5.*"
+            }[2m])
+          ) 
+          / 
+          (
+            sum(
+              rate(istio_requests_total{
+                reporter="destination",
+                destination_workload_namespace="{{args.namespace-name}}",
+                destination_service_name=~"{{args.service-name}}.*"
+              }[2m])
+            ) + 0.001
+          )
+          

@@ -1,0 +1,74 @@
+
+{{- if .Values.currencyService.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.currencyService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.currencyService.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.currencyService.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.currencyService.name }}
+    spec:
+      {{- if .Values.serviceAccounts.create }}
+      serviceAccountName: {{ .Values.currencyService.name }}
+      {{- else }}
+      serviceAccountName: default
+      {{- end }}
+      terminationGracePeriodSeconds: 5
+      {{- if .Values.securityContext.enable }}
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        {{- if .Values.seccompProfile.enable }}
+        seccompProfile:
+          type: {{ .Values.seccompProfile.type }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: server
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+        image: {{ .Values.images.currencyservice.repository }}:{{ .Values.images.currencyservice.tag | default .Chart.AppVersion }}
+        ports:
+        - name: grpc
+          containerPort: 7000
+        env:
+        - name: PORT
+          value: "7000"
+        {{- if .Values.opentelemetryCollector.create }}
+        - name: COLLECTOR_SERVICE_ADDR
+          value: "{{ .Values.opentelemetryCollector.name }}:4317"
+        - name: OTEL_SERVICE_NAME
+          value: "{{ .Values.currencyService.name }}"
+        {{- end }}
+        {{- if .Values.googleCloudOperations.tracing }}
+        - name: ENABLE_TRACING
+          value: "1"
+        {{- end }}
+        {{- if not .Values.googleCloudOperations.profiler }}
+        - name: DISABLE_PROFILER
+          value: "1"
+        {{- end }}
+        readinessProbe:
+          grpc:
+            port: 7000
+        livenessProbe:
+          grpc:
+            port: 7000
+        resources:
+          {{- toYaml .Values.currencyService.resources | nindent 10 }}
+{{- end }}

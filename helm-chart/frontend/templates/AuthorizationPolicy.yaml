@@ -1,0 +1,37 @@
+
+{{- if .Values.frontend.create }}
+{{- if .Values.authorizationPolicies.create }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.frontend.name }}
+  rules:
+  {{- if .Values.frontend.externalService }}
+  - to:
+  {{- else }}
+  - from:
+    - source:
+        principals:
+        {{- if .Values.serviceAccounts.create }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.loadGenerator.name }}
+        {{- else }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/default
+        {{- end }}
+        {{- if .Values.frontend.virtualService.create }}
+        - cluster.local/ns/{{ .Values.frontend.virtualService.gateway.namespace }}/sa/{{ .Values.frontend.virtualService.gateway.name }}
+        {{- end }}
+    to:
+  {{- end }}
+    - operation:
+        methods:
+        - GET
+        - POST
+        ports:
+        - "8080"
+{{- end }}
+{{- end }}

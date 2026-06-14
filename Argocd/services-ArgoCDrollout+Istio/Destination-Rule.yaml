@@ -1,0 +1,30 @@
+apiVersion: networking.istio.io/v1alpha3
+kind: DestinationRule
+metadata:
+  name: my-app-dr
+  namespace: my-app
+spec:
+  host: my-app-service # Trỏ tới K8s Service ở trên
+  trafficPolicy:
+   loadBalancer:
+    simple: LEAST_REQUEST
+   # Connection pool (chống spike internal traffic)
+   connectionPool:
+      tcp:
+        maxConnections: 200
+      http:
+        http1MaxPendingRequests: 200
+        maxRequestsPerConnection: 50
+   outlierDetection:
+    consecutive5xxErrors: 5
+    interval: 30s
+    baseEjectionTime: 60s
+    maxEjectionPercent: 50
+  subsets:
+  - name: stable
+    labels:
+      rollouts-pod-template-hash: stable # Argo Rollouts sẽ tự động quản lý label này
+  - name: canary
+    labels:
+      rollouts-pod-template-hash: canary # Argo Rollouts sẽ tự động quản lý label này
+---

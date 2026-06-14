@@ -1,0 +1,111 @@
+#Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api
+  namespace: production
+  labels:
+    app: order-api
+spec:
+  replicas: 2  
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1      # baseline để tránh cold start
+  selector:
+    matchLabels:
+      app: order-api
+  template:
+    metadata:
+      labels:
+        app: order-api
+    spec: 
+      imagePullPolicy: IfNotPresent
+      securityContext:        ##   
+        runAsGroup: 3000      ##
+        runAsNonRoot: true    ##  security at pod level
+        runAsUser: 1000       ##
+        fsGroup: 2000 
+
+        seccompProfile:
+          type: RuntimeDefault
+
+      topologySpreadConstraints:
+        - maxSkew: 1 # cho phép độ lệch tối đa là một
+          topologyKey: kubernetes.io/hostname # or hostname
+          whenUnsatisfiable: ScheduleAnyway # or DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: order-api
+              
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: order-api
+
+      priorityClassName: low-priority
+      terminationGracePeriodSeconds: 30
+
+      # affinity:
+      #   nodeAffinity:
+      #     requiredDuringSchedulingIgnoredDuringExecution:
+      #       nodeSelectorTerms:
+      #       - matchExpressions:
+      #         - key: node-name
+      #           operator: In
+      #           values:
+      #           - arm-worker
+      containers:
+      - name: order-api
+        image: nginx:1.25   
+        ports:
+          - containerPort: 8080
+        resources:
+          requests:
+            cpu: "500m"         # baseline cho scheduler & HPA
+            memory: "218Mi"
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+
+        securityContext:                    #
+          runAsNonRoot: true                #
+          runAsUser: 1000                   #
+          allowPrivilegeEscalation: false   #    Security at container level                        
+          readOnlyRootFilesystem: true      #
+          privileged: false                 #
+          capabilities:                     #
+            # add: ["NET_ADMIN","SYS_TIME"] #
+            drop: ["ALL"]                   #
+
+        # Liveness (check xem pod có healthy không) / Readiness probes(check xem pod có thể nhận được trafic không) rất quan trọng production
+        livenessProbe:
+          httpGet:
+            path: /
+            port:  80
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 2
+          failureThreshold: 3
+
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 2 
+          failureThreshold: 3
+        volumeMounts:
+          - name: nginx-cache
+            mountPath: /var/cache/nginx
+      volumes:
+        - name: nginx-cache
+          emptyDir: {}
+         
+---
+
+

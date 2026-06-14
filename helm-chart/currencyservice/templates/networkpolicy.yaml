@@ -1,0 +1,31 @@
+
+{{- if .Values.currencyService.create }}
+{{- if .Values.networkPolicies.create }}
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.currencyService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Values.currencyService.name }}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: {{ .Values.frontend.name }}
+    - podSelector:
+        matchLabels:
+          app: {{ .Values.checkoutService.name }}
+    ports:
+     - port: 7000
+       protocol: TCP
+  egress:
+  - {}
+{{- end }}
+{{- end }}

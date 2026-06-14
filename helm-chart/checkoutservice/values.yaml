@@ -1,0 +1,92 @@
+# Copyright 2024 Google LLC
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Default values for onlineboutique.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+images:
+  checkoutservice:
+    repository: ghcr.io/laxmikantagiri/microservices-demo/checkoutservice
+    tag: v0.10.4
+frontend:
+  name: frontend
+productCatalogService:
+  name: productcatalogservice
+
+shippingService:
+  name: shippingservice
+
+paymentService:
+  name: paymentservice
+
+emailService:
+  name: emailservice
+
+currencyService:
+  name: currencyservice
+
+cartService:
+  name: cartservice
+
+ 
+serviceAccounts:
+  # Specifies whether service accounts should be created.
+  create: true
+  # Annotations to add to the service accounts.
+  annotations: {}
+  # Annotations to add only for the cartservice app. This allows to follow the least privilege principle where only cartservice needs to connect to external database for example via Workload Identity.
+  annotationsOnlyForCartservice: false
+
+networkPolicies:
+  # Specifies if the NetworkPolicies are created or not. If true, one fine granular NetworkPolicy per app is created.
+  create: true
+
+sidecars:
+  # Specifies if the Sidecars are created or not. If true, one fine granular Sidecar per app is created.
+  create: true
+
+authorizationPolicies:
+  # Specifies if the AuthorizationPolicies are created or not. If true, one fine granular AuthorizationPolicy per app is created.
+  create: true
+
+opentelemetryCollector:
+  create: false
+  name: opentelemetrycollector
+  # Specifies the project id for the otel collector. If set as "PROJECT_ID" (default value), an initContainer will automatically retrieve the project id value from the metadata server.
+  projectId: "PROJECT_ID"
+
+googleCloudOperations:
+  profiler: false
+  tracing: false
+  metrics: false
+
+seccompProfile:
+  enable: true
+  type: RuntimeDefault
+
+securityContext:
+  enable: true
+
+checkoutService:
+  create: true
+  name: checkoutservice
+  resources:
+    requests:
+      cpu: 100m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 128Mi
+

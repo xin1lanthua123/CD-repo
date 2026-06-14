@@ -1,0 +1,76 @@
+{{- if .Values.recommendationService.create }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.recommendationService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.recommendationService.name }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.recommendationService.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.recommendationService.name }}
+    spec:
+      {{- if .Values.serviceAccounts.create }}
+      serviceAccountName: {{ .Values.recommendationService.name }}
+      {{- else }}
+      serviceAccountName: default
+      {{- end }}
+      terminationGracePeriodSeconds: 5
+      {{- if .Values.securityContext.enable }}
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        {{- if .Values.seccompProfile.enable }}
+        seccompProfile:
+          type: {{ .Values.seccompProfile.type }}
+        {{- end }}
+      {{- end }}
+      containers:
+      - name: server
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          privileged: false
+          readOnlyRootFilesystem: true
+        image: {{ .Values.images.recommendationservice.repository }}:{{ .Values.images.recommendationservice.tag | default .Chart.AppVersion }}
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          periodSeconds: 5
+          grpc:
+            port: 8080
+        livenessProbe:
+          periodSeconds: 5
+          grpc:
+            port: 8080
+        env:
+        - name: PORT
+          value: "8080"
+        - name: PRODUCT_CATALOG_SERVICE_ADDR
+          value: "{{ .Values.productCatalogService.name }}:3550"
+        {{- if .Values.opentelemetryCollector.create }}
+        - name: COLLECTOR_SERVICE_ADDR
+          value: "{{ .Values.opentelemetryCollector.name }}:4317"
+        - name: OTEL_SERVICE_NAME
+          value: "{{ .Values.recommendationService.name }}"
+        {{- end }}
+        {{- if .Values.googleCloudOperations.tracing }}
+        - name: ENABLE_TRACING
+          value: "1"
+        {{- end }}
+        {{- if not .Values.googleCloudOperations.profiler }}
+        - name: DISABLE_PROFILER
+          value: "1"
+        {{- end }}
+        resources:
+          {{- toYaml .Values.recommendationService.resources | nindent 10 }}
+{{- end }}

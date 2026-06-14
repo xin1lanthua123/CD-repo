@@ -1,0 +1,31 @@
+
+{{- if .Values.recommendationService.create }}
+{{- if .Values.authorizationPolicies.create }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.recommendationService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.recommendationService.name }}
+  rules:
+  - from:
+    - source:
+        principals:
+        {{- if .Values.serviceAccounts.create }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.frontend.name }}
+        {{- else }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/default
+        {{- end }}
+    to:
+    - operation:
+        paths:
+        - /hipstershop.RecommendationService/ListRecommendations
+        methods:
+        - POST
+        ports:
+        - "8080"
+{{- end }}
+{{- end }}

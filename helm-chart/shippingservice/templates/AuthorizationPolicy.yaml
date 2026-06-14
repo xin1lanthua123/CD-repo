@@ -1,0 +1,33 @@
+
+{{- if .Values.shippingService.create }}
+{{- if .Values.authorizationPolicies.create }}
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: {{ .Values.shippingService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.shippingService.name }}
+  rules:
+  - from:
+    - source:
+        principals:
+        {{- if .Values.serviceAccounts.create }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.frontend.name }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/{{ .Values.checkoutService.name }}
+        {{- else }}
+        - cluster.local/ns/{{ .Release.Namespace }}/sa/default
+        {{- end }}
+    to:
+    - operation:
+        paths:
+        - /hipstershop.ShippingService/GetQuote
+        - /hipstershop.ShippingService/ShipOrder
+        methods:
+        - POST
+        ports:
+        - "50051"
+{{- end }}
+{{- end }}

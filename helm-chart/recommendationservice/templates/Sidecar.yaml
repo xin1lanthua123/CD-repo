@@ -1,0 +1,21 @@
+
+{{- if .Values.recommendationService.create }}
+{{- if .Values.sidecars.create }}
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: {{ .Values.recommendationService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ .Values.recommendationService.name }}
+  egress:
+  - hosts:
+    - istio-system/*
+    - ./{{ .Values.productCatalogService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- if .Values.opentelemetryCollector.create }}
+    - ./{{ .Values.opentelemetryCollector.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- end }}
+{{- end }}
+{{- end }}

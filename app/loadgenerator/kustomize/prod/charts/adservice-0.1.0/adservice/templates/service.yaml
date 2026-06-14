@@ -1,0 +1,17 @@
+{{- if .Values.adService.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.adService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.adService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.adService.name }}
+  ports:
+  - name: grpc
+    port: 9555
+    targetPort: 9555
+{{- end }}

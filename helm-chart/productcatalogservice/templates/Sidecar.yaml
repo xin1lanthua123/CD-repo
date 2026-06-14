@@ -1,0 +1,20 @@
+
+{{- if .Values.productCatalogService.create }}
+{{- if .Values.sidecars.create }}
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: {{ .Values.productCatalogService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ .Values.productCatalogService.name }}
+  egress:
+  - hosts:
+    - istio-system/*
+    {{- if .Values.opentelemetryCollector.create }}
+    - ./{{ .Values.opentelemetryCollector.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- end }}
+{{- end }}
+{{- end }}

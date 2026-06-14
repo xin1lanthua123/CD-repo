@@ -1,0 +1,6 @@
+﻿apiVersion: v2
+name: adservice
+description: Helm chart for adservice microservice
+type: application
+version: 0.1.0
+appVersion: "1.0.0"

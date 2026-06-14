@@ -1,0 +1,17 @@
+{{- if .Values.checkoutService.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.checkoutService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.checkoutService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.checkoutService.name }}
+  ports:
+  - name: grpc
+    port: 5050
+    targetPort: 5050
+{{- end }}

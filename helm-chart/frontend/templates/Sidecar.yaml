@@ -1,0 +1,27 @@
+
+{{- if .Values.frontend.create }}
+{{- if .Values.sidecars.create }}
+apiVersion: networking.istio.io/v1beta1
+kind: Sidecar
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  workloadSelector:
+    labels:
+      app: {{ .Values.frontend.name }}
+  egress:
+  - hosts:
+    - istio-system/*
+    - ./{{ .Values.adService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    - ./{{ .Values.cartService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    - ./{{ .Values.checkoutService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    - ./{{ .Values.currencyService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    - ./{{ .Values.productCatalogService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    - ./{{ .Values.recommendationService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    - ./{{ .Values.shippingService.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- if .Values.opentelemetryCollector.create }}
+    - ./{{ .Values.opentelemetryCollector.name }}.{{ .Release.Namespace }}.svc.cluster.local
+    {{- end }}
+{{- end }}
+{{- end }}

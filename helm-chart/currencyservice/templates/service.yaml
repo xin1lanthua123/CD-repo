@@ -1,0 +1,17 @@
+{{- if .Values.currencyService.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.currencyService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.currencyService.name }}
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.currencyService.name }}
+  ports:
+  - name: grpc
+    port: 7000
+    targetPort: 7000
+{{- end }}

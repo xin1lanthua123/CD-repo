@@ -1,0 +1,19 @@
+{{- if .Values.loadGenerator.create }}
+{{- if .Values.networkPolicies.create }}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ .Values.loadGenerator.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.loadGenerator.name }}
+spec:
+  podSelector:
+    matchLabels:
+      app: {{ .Values.loadGenerator.name }}
+  policyTypes:
+  - Egress
+  egress:
+  - {}
+{{- end }}
+{{- end }}
