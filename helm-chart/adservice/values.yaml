@@ -20,7 +20,7 @@ images:
   adservice:
     repository: quanldl/adservice
     # Overrides the image tag whose default is the chart appVersion.
-    tag: v0.10.4
+    tag: 5174c1f
 frontend:
   name: frontend
 
