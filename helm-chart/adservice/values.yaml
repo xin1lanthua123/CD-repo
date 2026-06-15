@@ -56,7 +56,7 @@ googleCloudOperations:
   metrics: false
 
 imagePullPolicy:
-  enable: true
+  enable: false
   type: IfNotPresent
 
 seccompProfile:
