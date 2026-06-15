@@ -39,4 +39,4 @@ spec:
         syncOptions:
           - Validate=true
           - CreateNamespace=true
-          - PruneLast=true$env:Path += ";$PWD\istio-1.22.0\bin"
+          - PruneLast=true
