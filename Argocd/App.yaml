@@ -10,7 +10,7 @@ spec:
 
   generators:
     - git:
-        repoURL: https://your-git-repo-url.git
+        repoURL: https://github.com/xin1lanthua123/CD-repo.git
         revision: main
         directories:
           - path: helm-chart/*
@@ -30,11 +30,13 @@ spec:
 
       destination:
         server: https://kubernetes.default.svc
-        namespace: microservices
+        namespace: online
 
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
+          - Validate=true
           - CreateNamespace=true
+          - PruneLast=true$env:Path += ";$PWD\istio-1.22.0\bin"
