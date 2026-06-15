@@ -18,7 +18,7 @@
 
 images:
   cartservice:
-    repository: quanldl/cartservice
+    repository: ghcr.io/laxmikantagiri/microservices-demo/cartservice
     tag: v0.10.4
 
 frontend:
