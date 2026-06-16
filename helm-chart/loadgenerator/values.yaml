@@ -62,7 +62,7 @@ securityContext:
 
 
 loadGenerator:
-  create: true
+  create: false
   name: loadgenerator
   checkFrontendInitContainer: true
   resources:
