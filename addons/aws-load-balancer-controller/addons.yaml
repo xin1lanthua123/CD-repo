@@ -1,0 +1,6 @@
+name: aws-load-balancer-controller
+repoURL: https://aws.github.io/eks-charts
+chart: aws-load-balancer-controller
+version: 3.4.0
+namespace: kube-system
+valuesFile: addons/aws-load-balancer-controller/aws-load-balancer-controller-values.yaml

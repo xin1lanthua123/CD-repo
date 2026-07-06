@@ -1,0 +1,6 @@
+name: eck-kibana
+repoURL: https://helm.elastic.co
+chart: eck-kibana
+version: 0.19.1
+namespace: observability
+valuesFile: addons/eck-kibana/eck-kibana-values.yaml

@@ -1,0 +1,85 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: addons
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  sourceRepos:
+    - https://prometheus-community.github.io/helm-charts
+    - https://helm.elastic.co
+    - https://grafana.github.io/helm-charts
+    - https://open-telemetry.github.io/opentelemetry-helm-charts
+    - https://istio-release.storage.googleapis.com/charts
+    - https://kubernetes-sigs.github.io/external-dns/
+    - https://aws.github.io/eks-charts
+    - https://jaegertracing.github.io/helm-charts
+
+
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: monitoring
+    - server: https://kubernetes.default.svc
+      namespace: logging
+    - server: https://kubernetes.default.svc
+      namespace: tracing
+    - server: https://kubernetes.default.svc
+      namespace: otel
+    - server: https://kubernetes.default.svc
+      namespace: external-dns
+    - server: https://kubernetes.default.svc
+      namespace: kube-system
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+    - server: https://kubernetes.default.svc
+      namespace: argo-rollouts  
+  
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: apiextensions.k8s.io
+      kind: CustomResourceDefinition
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+    - group: storage.k8s.io
+      kind: StorageClass
+    - group: storage.k8s.io
+      kind: CSIDriver
+    - group: scheduling.k8s.io
+      kind: PriorityClass
+    - group: apiregistration.k8s.io
+      kind: APIService
+    - group: policy
+      kind: PodSecurityPolicy   
+
+  
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  roles:
+    - name: admin
+      description: Full quyền quản lý addons (platform team)
+      policies:
+        - p, proj:addons:admin, applications, *, addons/*, allow
+        - p, proj:addons:admin, repositories, *, *, allow
+      groups:
+        - your-org:platform-team
+
+    - name: readonly
+      description: Chỉ xem, không sync/tạo sửa
+      policies:
+        - p, proj:addons:readonly, applications, get, addons/*, allow
+      groups:
+        - your-org:developers
+
+  # Chặn xoá nhầm project khi còn Application con
+  orphanedResources:
+    warn: true

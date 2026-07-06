@@ -1,0 +1,13 @@
+apiVersion: gateway.k8s.aws/v1beta1
+kind: LoadBalancerConfiguration
+metadata:
+  name: app-gw-lbconfig
+  namespace: default
+spec:
+  scheme: internet-facing
+
+  listenerConfigurations:
+    - protocolPort: HTTPS:443
+      defaultCertificate: arn:aws:acm:us-east-1:816069145490:certificate/9e21680d-c654-42b8-8ab6-351f0bedd299
+  wafV2:
+    webACL: arn:aws:wafv2:us-east-1:816069145490:regional/webacl/dev-my-app-waf/dbdff924-07b8-45e6-a620-72657722c673

@@ -10,11 +10,10 @@ spec:
     name: aws-secrets-manager
     kind: ClusterSecretStore
   target:
-    name: api-secrets # K8s Secret name
+    name: elasticsearch-password # K8s Secret name
     creationPolicy: Owner
   dataFrom:
     - extract:
-        key: datnx-api # AWS Secrets Manager secret name
+        key: elasticsearch-password # AWS Secrets Manager secret name
 
- #Verify
- #kubectl get externalsecret -n staging
+

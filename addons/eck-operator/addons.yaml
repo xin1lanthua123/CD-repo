@@ -1,0 +1,6 @@
+name: eck-operator
+repoURL: https://helm.elastic.co
+chart: eck-operator
+version:  3.4.1 
+namespace: observability
+valuesFile: addons/eck-operator/eck-operator-values.yaml

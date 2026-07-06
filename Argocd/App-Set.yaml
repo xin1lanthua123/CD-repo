@@ -1,0 +1,42 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: microservices-helm
+  namespace: dev-argocd
+spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+
+  generators:
+    - git:
+        repoURL: https://github.com/xin1lanthua123/CD-repo.git
+        revision: main
+        directories:
+          - path: helm-chart/*
+  template:
+    metadata:
+      name: '{{.path.basename}}'
+    spec:
+      project: default
+
+      source:
+        repoURL: https://github.com/xin1lanthua123/CD-repo.git
+        targetRevision: main
+        path: '{{.path.path}}'
+        helm:
+          valueFiles:
+            - values.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: online
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - Validate=true
+          - CreateNamespace=true
+          - PruneLast=true

@@ -42,6 +42,8 @@ jobs:
           filters: |
             helm-chart:
               - 'helm-chart/**'
+            github-file:
+              - '.github/workflows/validate-manifest.yaml'
 
       - name: Extract helm chart services
         id: extract
@@ -50,6 +52,7 @@ jobs:
           set -euo pipefail
 
           HELM_FILES="${{ steps.filter.outputs.helm-chart_files }}"
+          GITHUB_FILES="${{ steps.filter.outputs.github-file_files}}"
 
           if [ -n "$HELM_FILES" ]; then
 
@@ -62,7 +65,14 @@ jobs:
             )
 
             SERVICES="$MODIFIED_SERVICES"
+          elif [ -n "$GITHUB_FILES" ]; then
 
+            ALL_SERVICES=$(
+              find services -mindepth 1 -maxdepth 1 -type d -printf "%f\n" \
+                | jq -R -s -c 'split("\n") | map(select(length>0))'
+            )
+
+            SERVICES="$ALL_SERVICES"
           else
             SERVICES="[]"
           fi

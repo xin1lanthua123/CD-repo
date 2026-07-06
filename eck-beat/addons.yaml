@@ -1,0 +1,6 @@
+name: eck-beat
+repoURL: https://helm.elastic.co
+chart: eck-beat
+version: 0.19.1
+namespace: observability
+valuesFile: addons/eck-beat/eck-beat-values.yaml

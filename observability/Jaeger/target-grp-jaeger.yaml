@@ -1,0 +1,15 @@
+apiVersion: gateway.k8s.aws/v1beta1
+kind: TargetGroupConfiguration
+metadata:
+  name: jaeger-tg-config
+  namespace: observability
+spec:
+  targetReference:
+    name: jaeger
+  defaultConfiguration:
+    targetType: ip
+    protocol: HTTP
+    healthCheckConfig:
+      healthCheckProtocol: HTTP
+      healthCheckPath: /
+ 

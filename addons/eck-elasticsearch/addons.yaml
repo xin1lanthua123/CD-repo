@@ -1,0 +1,9 @@
+name: eck-elasticsearch
+
+repoURL: https://helm.elastic.co
+chart: eck-elasticsearch
+version: 0.19.1
+
+namespace:  observability
+
+valuesFile: addons/eck-elasticsearch//eck-elasticsearch-values.yaml

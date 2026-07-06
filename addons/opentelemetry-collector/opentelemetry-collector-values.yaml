@@ -1,0 +1,220 @@
+file_format: yaml
+apiVersion: "apps/v1"
+mode: daemonset
+fullnameOverride: opentelemetrycollector
+config:
+  receivers:
+    otlp:
+      protocols:
+        http:
+          endpoint: "0.0.0.0:4318"
+          cors:
+           allowed_origins:  
+            - "https://*"  # cho phép frontend gửi
+        grpc:
+          endpoint: "0.0.0.0:4317"
+
+    filelog:
+      include:
+        - /var/log/*/*/*.log
+        - /var/log/containers/*.log
+      exclude: 
+        - /var/log/pods/*/otel-collector/*.log  # tránh đọc log của chính mình
+      start_at: beginning
+      include_file_name: true
+      include_file_path: true
+      operators:
+        - type: container
+
+    hostmetrics:
+      enabled: true
+      root_path: /hostfs
+      collection_interval: 30s
+      scrapers:
+        cpu:
+         metrics:
+          system.cpu.utilization:
+            enabled: true
+        memory:
+         metrics:
+          system.memory.utilization:
+            enabled: true
+        disk:
+        filesystem:
+        network:
+        load:
+        
+    kubeletMetrics:
+      enabled: true
+      collection_interval: 30s
+      auth_type: serviceAccount
+      endpoint: https://${env:K8S_NODE_NAME}:10250
+      insecure_skip_verify: true
+      metric_groups:
+        - node
+        - pod
+        - container
+
+    k8s_cluster:
+      enables: true
+      collection_interval: 30s
+      node_conditions_to_report: [Ready, MemoryPressure]
+      allocatable_types_to_report:
+        - cpu
+        - memory
+
+    prometheus:
+      config:
+        scrape_configs:
+          - job_name: node-exporter
+            scrape_interval: 15s
+            static_configs:
+              - targets:
+                  - node-exporter.monitoring.svc.cluster.local:9100
+
+          - job_name: kube-state-metrics
+            scrape_interval: 30s
+            static_configs:
+              - targets:
+                  - kube-state-metrics.monitoring.svc.cluster.local:8080
+
+
+
+  processors:
+    memory_limiter:
+      check_interval: 5s
+      limit_percentage: 80     # đặt bằng 80% memory limit của container
+      spike_limit_percentage: 25   # buffer cho traffic đột biến
+
+    k8sattributes:
+      enabled: true
+      auth_type: serviceAccount
+      filter:
+        node_from_env_var: KUBE_NODE_NAME  # chỉ lookup pods trên node này
+      extract:
+        metadata:
+          - k8s.pod.name
+          - k8s.namespace.name
+          - k8s.deployment.name
+          - k8s.node.name
+          - k8s.pod.start_time
+          - k8s.pod.uid
+      pod_association:
+        - sources:
+          - from: resource_attribute
+            name: k8s.pod.ip
+    batch:
+      send_batch_size: 2000      
+      send_batch_max_size: 3000  # giới hạn tối đa mỗi batch
+      timeout: 10s               # gửi sau 10s dù chưa đủ batch
+
+  exporters:
+    prometheus:
+      endpoint: "0.0.0.0:8889"
+
+    otlp/jaeger:
+      endpoint: "jaeger-collector.tracing:4317"  # Update as per your Jaeger service
+      tls:
+        insecure: true
+      timeout: 15s
+      sending_queue:
+        enabled: true
+        num_consumers: 5
+        queue_size: 5000
+      retry_on_failure:
+        enabled: true
+        initial_interval: 5s
+        max_retries: 2
+        max_interval: 30s
+        max_elapsed_time: 300s     # bỏ cuộc sau 5 phút
+
+    elasticsearch:
+      endpoints: "http://logging-es-http.logging.svc:9200"
+      user: elasticsearch
+      password: "elasticsearch"    # inject từ K8s secret
+      logs_index: otel-logs
+      flush_interval: 30s
+      sending_queue:
+        enabled: true
+        num_consumers: 5
+        queue_size: 5000
+      retry_on_failure:
+        enabled: true
+        max_retries: 2
+        initial_interval: 5s
+        max_interval: 30s
+        max_elapsed_time: 300s     # bỏ cuộc sau 5 phút
+
+    debug:
+      verbosity: detailed
+
+  service:
+    extensions:
+    - health_check
+    - pprof
+    - zpages
+
+  connectors:
+    spanmetrics: {}
+    servicegraph:
+      latency_histogram_buckets: [1ms, 2ms, 6ms, 10ms, 100ms, 250ms]
+      dimensions: [k8s.namespace.name]
+      store:
+        ttl: 2s
+        max_items: 1000
+
+    pipelines:
+      metrics:
+        receivers: [otlp,hostmetrics,prometheus,spanmetrics,servicegraph]
+        processors: [batch,k8sattributes,memory_limiter]
+        exporters: [prometheus,debug]
+      traces:
+        receivers: [otlp]
+        processors: [batch,memory_limiter,k8sattributes]
+        exporters: [otlp/jaeger,debug,spanmetrics]
+      logs:
+        receivers: [filelog,otlp]
+        processors: [batch,memory_limiter,k8sattributes]
+        exporters: [elasticsearch,debug]
+image:
+  repository: "otel/opentelemetry-collector-contrib"  # Use contrib image
+  tag: "0.128.0"  # Specify the desired tag
+  pullPolicy: "IfNotPresent"
+
+  
+command:
+  name: "otelcol-contrib"  # Optional: Update command name if necessary
+
+service:
+  type: ClusterIP
+
+
+resources:
+  requests:
+    memory: "256Mi"
+    cpu: "250m"
+  limits:
+    memory: "512Mi" 
+    cpu: "500m"
+
+ports:
+  prometheus:
+    enabled: true
+    containerPort: 8889
+    servicePort: 8889
+    protocol: TCP
+    appProtocol: TCP
+  otlp:
+    enabled: true
+    containerPort: 4317
+    servicePort: 4317
+    hostPort: 4317
+    protocol: TCP
+    appProtocol: grpc
+  otlp-http:
+    enabled: true
+    containerPort: 4318
+    servicePort: 4318
+    hostPort: 4318
+    protocol: TCP
+

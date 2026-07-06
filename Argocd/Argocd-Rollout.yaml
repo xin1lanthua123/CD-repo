@@ -1,22 +1,22 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: myapp
+  name: myapp 
 spec:
   replicas: 5
 
   selector:
     matchLabels:
-      app: myapp
+      app: adservice
 
   template:
     metadata:
       labels:
-        app: myapp
+        app: adservice
     spec:
       containers:
-      - name: myapp
-        image: myapp:1.0.0
+      - name: adservice
+        image: adservice:1.0.0
 
   strategy:
     canary:
@@ -39,10 +39,10 @@ spec:
       - pause: {duration: 60s}
 
       - setWeight: 50
-      - pause: {duration: 2m}
+      - pause: {duration: 60s}
 
       - setWeight: 70
-      - pause: {duration: 2m}
+      - pause: {duration: 60s}
 
       - setWeight: 90
       - pause: {duration: 2m}

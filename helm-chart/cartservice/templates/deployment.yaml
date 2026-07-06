@@ -1,4 +1,5 @@
 {{- if .Values.cartService.create }}
+{{- if .Values.deployment.create }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -33,11 +34,11 @@ spec:
         runAsGroup: 1000
         runAsNonRoot: true
         runAsUser: 1000
-      {{- end }}
         {{- if .Values.seccompProfile.enable }}
         seccompProfile:
           type: {{ .Values.seccompProfile.type }}
         {{- end }}
+      {{- end }}
       containers:
       - name: server
         securityContext:
@@ -51,12 +52,12 @@ spec:
         ports:
         - containerPort: 7070
         env:
-        {{- if eq .Values.cartDatabase.type "spanner" }}
-        - name: SPANNER_CONNECTION_STRING
-        {{- else }}
-        - name: REDIS_ADDR
-        {{- end }}
-          value: {{ .Values.cartDatabase.connectionString | quote }}
+          {{- if eq .Values.cartDatabase.type "spanner" }}
+          - name: SPANNER_CONNECTION_STRING
+          {{- else }}
+          - name: REDIS_ADDR
+          {{- end }}
+            value: {{ .Values.cartDatabase.connectionString | quote }}
         resources:
           {{- toYaml .Values.cartService.resources | nindent 10 }}
         readinessProbe:
@@ -68,4 +69,64 @@ spec:
           periodSeconds: 10
           grpc:
             port: 7070
+---
+{{- else }}
+
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Values.cartService.name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: {{ .Values.cartService.name }}
+
+  template:
+    metadata:
+      labels:
+        app:  {{ .Values.cartService.name }}
+    spec:
+      containers:
+      - name: {{ .Values.cartService.name }}
+        image: {{ .Values.images.cartservice.repository }}:{{ .Values.images.cartservice.tag | default .Chart.AppVersion }}
+
+  strategy:
+    canary:
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ .Values.cartService.name }} # Trỏ đúng tên VirtualService đã tạo ở trên
+            routes:
+            - primary-route # Khớp với tên "name: primary-route" trong VirtualService
+          destinationRule:
+            name: {{ .Values.cartService.name }} # Trỏ đúng tên DestinationRule đã tạo ở trên
+            canarySubsetName: canary # Tên của subset nhận bản cập nhật mới
+            stableSubsetName: stable # Tên của subset giữ bản chạy ổn định
+      # Các bước tăng % Traffic dần dần (Canary Steps)s
+      steps:
+      - setWeight: 10
+      - pause: {duration: 60s}
+
+      - setWeight: 30
+      - pause: {duration: 60s}
+
+      - setWeight: 50
+      - pause: {duration: 60s}
+
+      - setWeight: 70
+      - pause: {duration: 60s}
+
+      - setWeight: 90
+      - pause: {duration: 2m}
+
+      - setWeight: 100
+
+      # analysis:
+      #   templates:
+      #   - templateName: success-rate
 {{- end }}
+{{- end }}
+

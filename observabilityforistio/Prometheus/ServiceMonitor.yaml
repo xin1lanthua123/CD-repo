@@ -10,3 +10,4 @@ spec:
   endpoints:
   - port: http-monitoring
     interval: 15s
+    path: /metrics

@@ -1,0 +1,178 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: addons-project
+  namespace: argocd
+spec:
+  description: Project for App1 frontend/backend + platform infrastructure addons
+
+  sourceRepos:
+    - https://prometheus-community.github.io/helm-charts
+    - https://helm.elastic.co
+    - https://grafana.github.io/helm-charts
+    - https://open-telemetry.github.io/opentelemetry-helm-charts
+    - https://istio-release.storage.googleapis.com/charts
+
+  destinations:
+    - namespace: app1-*
+      server: https://kubernetes.default.svc
+    - namespace: monitoring
+      server: https://kubernetes.default.svc
+    - namespace: logging
+      server: https://kubernetes.default.svc
+    - namespace: observability
+      server: https://kubernetes.default.svc
+    - namespace: elastic-system
+      server: https://kubernetes.default.svc
+    - namespace: istio-system
+      server: https://kubernetes.default.svc
+
+  # ----------------------------
+  # CLUSTER SCOPED RESOURCES
+  # ----------------------------
+  clusterResourceWhitelist:
+    # Core infra
+    - group: ""
+      kind: Namespace
+    - group: ""
+      kind: PersistentVolume
+    - group: ""
+      kind: PersistentVolumeClaim
+    - group: ""
+      kind: ServiceAccount
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Service
+
+    # RBAC (bắt buộc cho operator)
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: rbac.authorization.k8s.io
+      kind: Role
+    - group: rbac.authorization.k8s.io
+      kind: RoleBinding
+
+    # Workloads cluster-level (ít dùng nhưng bạn yêu cầu)
+    - group: apps
+      kind: DaemonSet
+    - group: apps
+      kind: ReplicaSet
+    - group: apps
+      kind: StatefulSet
+
+    # Autoscaling
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+
+    # Networking / Gateway API
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+    - group: gateway.networking.k8s.io
+      kind: GRPCRoute
+
+    # Istio
+    - group: networking.istio.io
+      kind: VirtualService
+    - group: networking.istio.io
+      kind: DestinationRule
+    - group: networking.istio.io
+      kind: Gateway
+    - group: security.istio.io
+      kind: AuthorizationPolicy
+    - group: security.istio.io
+      kind: PeerAuthentication
+    - group: telemetry.istio.io
+      kind: Telemetry
+
+    # Prometheus / Monitoring stack
+    - group: monitoring.coreos.com
+      kind: ServiceMonitor
+    - group: monitoring.coreos.com
+      kind: PodMonitor
+    - group: monitoring.coreos.com
+      kind: Prometheus
+    - group: monitoring.coreos.com
+      kind: PrometheusRule
+    - group: monitoring.coreos.com
+      kind: Alertmanager
+
+    # ECK (Elastic Cloud on Kubernetes)
+    - group: elasticsearch.k8s.elastic.co
+      kind: Elasticsearch
+    - group: kibana.k8s.elastic.co
+      kind: Kibana
+    - group: apm.k8s.elastic.co
+      kind: ApmServer
+    - group: beat.k8s.elastic.co
+      kind: Beat
+
+    # Jaeger (tracing)
+    - group: jaegertracing.io
+      kind: Jaeger
+
+    # OpenTelemetry
+    - group: opentelemetry.io
+      kind: OpenTelemetryCollector
+
+  # ----------------------------
+  # NAMESPACE SCOPED RESOURCES
+  # ----------------------------
+  namespaceResourceWhitelist:
+    - group: apps
+      kind: Deployment
+    - group: apps
+      kind: StatefulSet
+    - group: apps
+      kind: DaemonSet
+
+    - group: ""
+      kind: Service
+    - group: ""
+      kind: ConfigMap
+    - group: ""
+      kind: Secret
+    - group: ""
+      kind: ServiceAccount
+
+    - group: networking.k8s.io
+      kind: Ingress
+
+    - group: autoscaling
+      kind: HorizontalPodAutoscaler
+
+    # CRD-based namespace resources
+    - group: monitoring.coreos.com
+      kind: ServiceMonitor
+    - group: monitoring.coreos.com
+      kind: PodMonitor
+
+  # ----------------------------
+  # OPTIONAL: giữ blacklist nhẹ lại (không chặn operator)
+  # ----------------------------
+  clusterResourceBlacklist:
+    # Không nên block ClusterRole/Binding nếu bạn chạy operator
+    # chỉ block những thứ cực nhạy cảm nếu cần
+    - group: ""
+      kind: Node
+
+  roles:
+    - name: dev-readonly
+      description: Read-only access for developers
+      policies:
+        - p, proj:app1-project:dev-readonly, applications, get, app1-project/*, allow
+      groups:
+        - app1-devs
+
+    - name: platform-admin
+      description: Full control for platform team
+      policies:
+        - p, proj:app1-project:platform-admin, applications, *, app1-project/*, allow
+      groups:
+        - platform-team
