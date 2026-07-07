@@ -1,5 +1,8 @@
 aws eks update-kubeconfig --name dev-my-app-eks --region us-east-1
 kubectl apply -k E:\CD-repo\observability
+
+autoscaler:
+helm upgrade -i autoscaler autoscaler/cluster-autoscaler -n kube-system  -f E:\CD-repo\addons\cluster-autoscaler\cluster-autoscaler-values.yaml
 istio:
 istioctl install --set profile=default -y
 
