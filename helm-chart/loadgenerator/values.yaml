@@ -20,7 +20,7 @@ images:
   loadgenerator:
     repository: ghcr.io/laxmikantagiri/microservices-demo/loadgenerator
     tag: v0.10.4
-    create: true
+    
 frontend:
   name: frontend
 serviceAccounts:
@@ -63,7 +63,7 @@ securityContext:
 
 
 loadGenerator:
-  create: false
+  create: true
   name: loadgenerator
   checkFrontendInitContainer: true
   resources:
