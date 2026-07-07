@@ -13,7 +13,9 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 
 helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n  kube-system -f E:\CD-repo\addons\aws-load-balancer-controller\aws-load-balancer-controller-values.yaml
 
-otel:
+kubectl apply -f E:\CD-repo\gateway-api-manifests
+
+otell:
   kubectl create ns otel 
   helm upgrade -i opentelemetrycollector open-telemetry/opentelemetry-collector -n otel -f E:\CD-repo\addons\opentelemetry-collector\daemonset.yaml
 
@@ -22,7 +24,7 @@ argocd:
   helm repo update
   kubectl create ns argocd 
   helm upgrade -install argocd argo/argo-cd -n argocd
-  kubectl apply -f E:\CD-repo\Argocd\target-grp-argocd.yaml
+  kubectl apply -f E:\CD-repo\Argocd\HTTProute
 
 
 external-dns:
