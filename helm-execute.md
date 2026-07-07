@@ -43,7 +43,7 @@ helm upgrade --install external-dns external-dns/external-dns -n external-dns -f
 
 promtheus,grafana stack:
   kubectl create ns monitoring 
-  helm upgrade -i kube-prometheus-stack prometheus-community/kube-prometheus-stack -f E:\CD-repo\addons\prometheus-kube-stack\prometheus-kube-stack-values.yaml  -n monitoring 
+  helm upgrade -i kube-prometheus-stack prometheus-community/kube-prometheus-stack -f E:\CD-repo\addons\kube-prometheus-stack\kube-prometheus-stack-values.yaml  -n monitoring 
 
 ECK stack + jaeger:
   kubectl create ns observability
