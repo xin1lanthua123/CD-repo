@@ -1,11 +1,24 @@
 aws eks update-kubeconfig --name dev-my-app-eks --region us-east-1
-kubectl apply -k E:\CD-repo\observability
+
+1.(Layer7) 2.(Layer4)
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml
+
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 
+
+
 
 argocd:
   helm repo update
   kubectl create ns argocd 
   helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
+
+  kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
+
+  kubectl apply -f E:\CD-repo\gateway-api-manifests
+
   kubectl apply -f E:\CD-repo\Argocd\HTTProute
+
+  kubectl apply -k E:\CD-repo\observability 
 
 
 autoscaler:
@@ -13,14 +26,10 @@ helm upgrade -i autoscaler autoscaler/cluster-autoscaler -n kube-system  -f E:\C
 istio:
 istioctl install --set profile=default -y
 
-load balancer controller: 1.(Layer7) 2.(Layer4)
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml
-
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 
-
+load balancer controller: 
 helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n  kube-system -f E:\CD-repo\addons\aws-load-balancer-controller\aws-load-balancer-controller-values.yaml
 
-kubectl apply -f E:\CD-repo\gateway-api-manifests
+
 
 otell:
   kubectl create ns observability

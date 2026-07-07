@@ -26,8 +26,8 @@ spec:
       - repoURL: '{{.repoURL}}'
         chart: '{{.chart}}'
         targetRevision: '{{.version}}'
-        releaseName: '{{.name}}'
         helm:
+          releaseName: '{{.name}}'
           valueFiles:
             - '$values/{{.valuesFile}}'
 
