@@ -51,7 +51,7 @@ ECK stack + jaeger:
   helm upgrade --install eck-elasticsearch elastic/eck-elasticsearch -n observability -f E:\CD-repo\addons\eck-elasticsearch\eck-elasticsearch-values.yaml
   helm upgrade --install eck-kibana elastic/eck-kibana -n observability -f E:\CD-repo\addons\eck-kibana\eck-kibana-values.yaml
 
-  helm upgrade --install jaeger jaegertracing/jaeger -n observability -f E:\CD-repo\addons\jaeger\jaeger.yaml
+  helm upgrade --install jaeger jaegertracing/jaeger -n observability -f E:\CD-repo\addons\jaeger\jaeger-values.yaml
 
     helm upgrade --install eck-beats elastic/eck-beats -f E:\CD-repo\addons\eck-beats-0.19.1.yaml
 
