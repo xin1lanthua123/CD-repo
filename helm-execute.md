@@ -5,6 +5,9 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 
 
+istio:
+istioctl install --set profile=default -y
+
 
 
 argocd:
@@ -23,8 +26,7 @@ argocd:
 
 autoscaler:
 helm upgrade -i autoscaler autoscaler/cluster-autoscaler -n kube-system  -f E:\CD-repo\addons\cluster-autoscaler\cluster-autoscaler-values.yaml
-istio:
-istioctl install --set profile=default -y
+
 
 load balancer controller: 
 helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n  kube-system -f E:\CD-repo\addons\aws-load-balancer-controller\aws-load-balancer-controller-values.yaml

@@ -44,6 +44,7 @@ spec:
           prune: true
           selfHeal: true
         syncOptions:
+          - ApplyOutOfSyncOnly=true
           - ServerSideApply=true # problem: quá tải annotations -> giải pháp : dùng SSA để kubernetes api server tư quản lý annotations -> không giới hạn
           - Validate=true
           - CreateNamespace=true
