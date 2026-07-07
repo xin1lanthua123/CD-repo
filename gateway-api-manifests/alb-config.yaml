@@ -10,4 +10,4 @@ spec:
     - protocolPort: HTTPS:443
       defaultCertificate: arn:aws:acm:us-east-1:816069145490:certificate/9e21680d-c654-42b8-8ab6-351f0bedd299
   wafV2:
-    webACL: arn:aws:wafv2:us-east-1:816069145490:regional/webacl/dev-my-app-waf/86f2918a-4de8-4da6-b0d9-ffb40a4e39c5
+    webACL: arn:aws:wafv2:us-east-1:816069145490:regional/webacl/dev-my-app-waf/4a482808-a41e-4bbc-9770-f84423c9c9aa
