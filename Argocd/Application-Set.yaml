@@ -16,7 +16,7 @@ spec:
               repoURL: https://github.com/xin1lanthua123/CD-repo.git
               revision: main
               directories:
-                - path: "helm/*"
+                - path: "helm-chart/*"
 
           # Dimension 2: clusters (explicit, simple)
           - list:

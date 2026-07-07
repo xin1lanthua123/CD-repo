@@ -1,9 +1,9 @@
-name: eck-elasticsearch
+name: cluster-autoscaler 
 
-repoURL: https://helm.elastic.co
-chart: eck-elasticsearch
-version: 0.19.1
+repoURL:  https://kubernetes.github.io/autoscaler 
+chart: cluster-autoscaler 
+version: 9.37.0
 
-namespace:  observability
+namespace: kube-system
 
 valuesFile: addons/cluster-autoscaler/cluster-autoscaler-values.yaml

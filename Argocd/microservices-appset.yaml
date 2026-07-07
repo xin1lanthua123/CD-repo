@@ -1,35 +1,37 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: cluster-addons
+  name: microservices-helm
   namespace: argocd
-
 spec:
+  goTemplate: true
+  goTemplateOptions:
+    - missingkey=error
+
   generators:
     - git:
         repoURL: https://github.com/xin1lanthua123/CD-repo.git
         revision: main
-        files:
-          - path: addons/*/addons.yaml
-
+        directories:
+          - path: helm-chart/*
+        
   template:
     metadata:
-      name: '{{name}}-app'
-
+      name: '{{.path.basename}}'
     spec:
       project: default
 
       source:
-        repoURL: '{{repoURL}}'
-        chart: '{{chart}}'
-        targetRevision: '{{version}}'
+        repoURL: https://github.com/xin1lanthua123/CD-repo.git
+        targetRevision: main
+        path: '{{.path.path}}'
         helm:
           valueFiles:
-            - addons/{{name}}/values.yaml
+            - values.yaml
 
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{namespace}}'
+        namespace: online-boutique
 
       syncPolicy:
         automated:

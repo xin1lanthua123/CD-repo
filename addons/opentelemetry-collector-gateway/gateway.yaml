@@ -115,7 +115,10 @@ config:
     elasticsearch:
       endpoints: "http://logging-es-http.observability.svc:9200"
       user: elasticsearch
-      password: "elasticsearch"    # inject từ K8s secret
+      password: "{env:ELASTIC_PASSWORD}"    # inject từ K8s secret
+      tls:
+        enabled: true
+        ca_file: /etc/tls/certs/elasticsearch/ca.crt
       logs_index: otel-logs
       sending_queue:
         enabled: true
@@ -205,3 +208,20 @@ resources:
   limits:
     memory: "500Mi"
     cpu: "1"
+
+extraEnvs: 
+  - name: ELASTIC_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: eck-elasticsearch-es-elastic-user
+        key: elastic 
+
+extraVolumes:
+  - name: elastic-ca
+    secret:
+      secretName: eck-elasticsearch-es-http-certs-public
+
+extraVolumeMounts:
+  - name: elastic-ca
+    mountPath: /etc/tls/certs/elasticsearch
+    readOnly: true

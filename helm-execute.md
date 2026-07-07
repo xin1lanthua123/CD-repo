@@ -16,14 +16,14 @@ helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n
 kubectl apply -f E:\CD-repo\gateway-api-manifests
 
 otell:
-  kubectl create ns otel 
-  helm upgrade -i opentelemetrycollector open-telemetry/opentelemetry-collector -n otel -f E:\CD-repo\addons\opentelemetry-collector\daemonset.yaml
+  kubectl create ns observability
+  helm upgrade -i opentelemetrycollector-daemonset open-telemetry/opentelemetry-collector -n observability -f E:\CD-repo\addons\opentelemetry-collector-daemonset\daemonset.yaml
 
-  helm upgrade -i opentelemetrycollector-gateway open-telemetry/opentelemetry-collector -n otel -f E:\CD-repo\addons\opentelemetry-collector\gateway.yaml
+  helm upgrade -i opentelemetrycollector-gateway open-telemetry/opentelemetry-collector -n otel -f E:\CD-repo\addons\opentelemetry-collector-gateway\gateway.yaml
 argocd:
   helm repo update
   kubectl create ns argocd 
-  helm upgrade -install argocd argo/argo-cd -n argocd
+  helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
   kubectl apply -f E:\CD-repo\Argocd\HTTProute
 
 

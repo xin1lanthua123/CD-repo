@@ -1,0 +1,9 @@
+name: opentelemetrycollector-daemonset
+
+repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+chart: opentelemetry-collector
+version: 0.154.0
+
+namespace:  observability
+
+valuesFile: addons/opentelemetry-collector-daemonset/daemonset.yaml

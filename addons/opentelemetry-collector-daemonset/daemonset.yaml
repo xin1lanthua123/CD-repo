@@ -1,6 +1,6 @@
 apiVersion: "apps/v1"
 mode: daemonset
-fullnameOverride: opentelemetrycollector
+fullnameOverride: opentelemetrycollector-daemonset
 config:
   receivers:
     otlp:
@@ -197,7 +197,7 @@ config:
         exporters: [loadbalancing/otlp-trace]
 
       metrics:
-        receivers: [otlp,prometheus,kubeletstats,k8s_cluster]
+        receivers: [otlp,kubeletstats,k8s_cluster]
         processors: [memory_limiter, k8sattributes, batch]
         exporters: [loadbalancing/otlp]
 
