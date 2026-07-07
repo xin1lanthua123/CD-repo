@@ -1,6 +1,6 @@
 name: external-dns
 repoURL: https://kubernetes-sigs.github.io/external-dns/
 chart: external-dns
-version: 1.21.0
+version: 1.21.1
 namespace: external-dns
 valueFiles: addons/external-dns/external-dns-values.yaml

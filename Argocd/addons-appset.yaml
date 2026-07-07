@@ -6,8 +6,8 @@ metadata:
 
 spec:
   goTemplate: true
-  goTemplateOptions:
-    - missingkey=err
+  # goTemplateOptions:
+  #   - missingkey=err
   generators:
     - git:
         repoURL: https://github.com/xin1lanthua123/CD-repo.git
@@ -17,7 +17,7 @@ spec:
 
   template:
     metadata:
-      name: '{{.name}}-app'
+      name: '{{.name}}-addons'
 
     spec:
       project: default
