@@ -2,7 +2,7 @@ apiVersion: gateway.networking.k8s.io/v1beta1
 kind: HTTPRoute
 metadata:
   name: prometheus-route-https
-  namespace: monitoring
+  namespace: observability
 spec:
   hostnames:
    - "prometheus.quanldl.click"

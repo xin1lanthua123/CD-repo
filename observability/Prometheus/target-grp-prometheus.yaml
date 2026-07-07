@@ -2,7 +2,7 @@ apiVersion: gateway.k8s.aws/v1beta1
 kind: TargetGroupConfiguration
 metadata:
   name: prometheus-tg-config
-  namespace: monitoring
+  namespace: observability
 spec:
   targetReference:
     name: kube-prometheus-stack-prometheus 

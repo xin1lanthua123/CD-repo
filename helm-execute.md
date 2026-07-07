@@ -1,6 +1,13 @@
 aws eks update-kubeconfig --name dev-my-app-eks --region us-east-1
 kubectl apply -k E:\CD-repo\observability
 
+argocd:
+  helm repo update
+  kubectl create ns argocd 
+  helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
+  kubectl apply -f E:\CD-repo\Argocd\HTTProute
+
+
 autoscaler:
 helm upgrade -i autoscaler autoscaler/cluster-autoscaler -n kube-system  -f E:\CD-repo\addons\cluster-autoscaler\cluster-autoscaler-values.yaml
 istio:
@@ -20,12 +27,6 @@ otell:
   helm upgrade -i opentelemetrycollector-daemonset open-telemetry/opentelemetry-collector -n observability -f E:\CD-repo\addons\opentelemetry-collector-daemonset\daemonset.yaml
 
   helm upgrade -i opentelemetrycollector-gateway open-telemetry/opentelemetry-collector -n otel -f E:\CD-repo\addons\opentelemetry-collector-gateway\gateway.yaml
-argocd:
-  helm repo update
-  kubectl create ns argocd 
-  helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
-  kubectl apply -f E:\CD-repo\Argocd\HTTProute
-
 
 external-dns:
 kubectl create ns external-dns
