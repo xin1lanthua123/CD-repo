@@ -113,11 +113,11 @@ config:
         max_elapsed_time: 300s     # bỏ cuộc sau 5 phút
 
     elasticsearch:
-      endpoints: "http://logging-es-http.observability.svc:9200"
-      user: elasticsearch
-      password: "{env:ELASTIC_PASSWORD}"    # inject từ K8s secret
+      endpoints: "https://logging-es-http.observability.svc:9200"
+      user: elastic
+      password: "${env:ELASTIC_PASSWORD}"    # inject từ K8s secret
       tls:
-        enabled: true
+        insecure: false
         ca_file: /etc/tls/certs/elasticsearch/ca.crt
       logs_index: otel-logs
       sending_queue:
