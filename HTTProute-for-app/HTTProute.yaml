@@ -17,7 +17,7 @@ spec:
       - path:
             type: PathPrefix
             value: /
-            
+
     backendRefs:
     - name: frontend
       port: 80
