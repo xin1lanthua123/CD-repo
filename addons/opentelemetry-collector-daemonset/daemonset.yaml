@@ -15,11 +15,11 @@ config:
 
     filelog:
       include:
-        - /var/log/*/*/*.log
-        - /var/log/containers/*.log
+        - hostfs/var/log/*/*/*.log
+        - hostfs/var/log/containers/*.log
       exclude: 
-        - /var/log/pods/*/opentelemetrycollector/*.log  # tránh đọc log của chính mình
-        - /var/log/pods/*/opentelemetry-collector-gateway/*.log  
+        - hostfs/var/log/pods/*/opentelemetrycollector/*.log  # tránh đọc log của chính mình
+        - hostfs/var/log/pods/*/opentelemetry-collector-gateway/*.log  
       start_at: end
       include_file_name: true
       include_file_path: true
