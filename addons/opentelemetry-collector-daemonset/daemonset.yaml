@@ -25,7 +25,8 @@ config:
       include_file_name: true
       include_file_path: true
       operators:
-        - type: container
+          - type: container
+            id: container-parser
 
     kubeletstats:
       collection_interval: 30s
