@@ -14,7 +14,7 @@ config:
           endpoint: "0.0.0.0:4317"
 
     filelog:
-      root_path: /hostfs
+      
       include:
         - /var/log/*/*/*.log
         - /var/log/containers/*.log
