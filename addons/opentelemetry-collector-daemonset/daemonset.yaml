@@ -294,9 +294,16 @@ extraVolumes:
       path: /
       type: Directory
 
+  - name: varlog
+    hostPath:
+    path: /var/log
+
 extraVolumeMounts: 
   - name: hostfs
     mountPath: /hostfs
     readOnly: true
-
+    
+  - name: varlog
+    mountPath: /var/log
+    readOnly: true
 
