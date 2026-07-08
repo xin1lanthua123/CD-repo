@@ -1,27 +1,25 @@
 aws eks update-kubeconfig --name dev-my-app-eks --region us-east-1
 
-1.(Layer7) 2.(Layer4)
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml
-
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 
-
-istio:
-istioctl install --set profile=default -y
-
-
-
 argocd:
   helm repo update
   kubectl create ns argocd 
   helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
+1.(Layer7) 2.(Layer4)
 
-  kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
+kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
 
-  kubectl apply -f E:\CD-repo\gateway-api-manifests
+kubectl apply -f E:\CD-repo\Argocd\microservices-appset.yaml
 
-  kubectl apply -f E:\CD-repo\Argocd\HTTProute
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml
 
-  kubectl apply -k E:\CD-repo\observability 
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 
+
+
+istioctl install --set profile=default -y
+
+kubectl apply -f E:\CD-repo\gateway-api-manifests
+
+kubectl apply -k E:\CD-repo\HTTProute-for-addons
 
 
 autoscaler:
