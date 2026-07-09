@@ -259,6 +259,5 @@ clusterRole:
   create: true
   rules:
   - apiGroups: [""]
-    resources: ["pods",
-                "endpoints", "services"]
+    resources: ["pods"]
     verbs: ["get", "list", "watch"]
