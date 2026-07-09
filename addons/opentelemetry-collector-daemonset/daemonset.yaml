@@ -206,7 +206,7 @@ config:
       logs:
         receivers: [otlp, filelog]
         processors: [memory_limiter, k8sattributes, batch]
-        exporters: [loadbalancing/otlp]
+        exporters: [debug]
     telemetry:
       resource:
         k8s.namespace.name: "${env:OTEL_K8S_NAMESPACE}"
