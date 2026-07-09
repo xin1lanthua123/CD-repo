@@ -1,0 +1,60 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+spec:
+  metrics:
+
+  - name: success-rate
+    interval: 30s
+
+    successCondition: result[0] >= 0.95
+
+    failureLimit: 3
+
+    provider:
+      prometheus:
+        address: http://prometheus.monitoring.svc.cluster.local:9090
+
+        query: |
+          sum(
+            rate(
+              istio_requests_total{
+                destination_service_name="adservice",
+                response_code!~"5.*"
+              }[5m]
+            )
+          )
+          /
+          sum(
+            rate(
+              istio_requests_total{
+                destination_service_name="adservice"
+              }[5m]
+            )
+          )
+          
+  - name: latency-p95
+
+    interval: 30s
+
+    successCondition: result[0] < 500
+
+    failureLimit: 3
+
+    provider:
+      prometheus:
+        address: http://prometheus.monitoring.svc.cluster.local:9090
+
+        query: |
+          histogram_quantile(
+            0.95,
+            sum(
+              rate(
+                istio_request_duration_milliseconds_bucket{
+                  destination_service_name="adservice"
+                }[5m]
+              )
+            )
+            by(le)
+          )

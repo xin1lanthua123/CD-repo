@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: my-app-vs
+
+spec:
+
+  hosts:
+    - adservice
+
+  http:
+
+    - name: primary-route
+
+      timeout: 5s
+
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+
+        retryOn: >
+          gateway-error,
+          connect-failure,
+          refused-stream,
+          unavailable,
+          reset
+
+      route:
+
+        - destination:
+            host: adservice
+            subset: stable
+          weight: 100
+
+        - destination:
+            host: adservice
+            subset: canary
+          weight: 0

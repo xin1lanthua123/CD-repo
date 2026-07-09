@@ -10,7 +10,7 @@ storage:
       enabled: true
       existingSecret: eck-elasticsearch-es-http-certs-public
       caCertKey: tls.crt
-  # Path where the CA cert is mounted
+  # Path where the CA cert is mountedd
 
 provisionDataStore:
   cassandra: false
