@@ -20,12 +20,13 @@ config:
       exclude:  
         - /var/log/containers/*opentelemetrycollector-daemonset*.log  # tránh đọc log của chính mình
         - /var/log/containers/*opentelemetrycollector-gateway*.log
-      start_at: end
+      start_at: beginning
       include_file_name: true
       include_file_path: true
       operators:
           - type: container
             id: container-parser
+            format: containerd
 
     kubeletstats:
       collection_interval: 30s
@@ -150,7 +151,7 @@ config:
 
       resolver:
         dns:
-          hostname: opentelemetrycollector-gateway.otel.svc.cluster.local:4317
+          hostname: opentelemetrycollector-gateway.observability.svc.cluster.local:4317
 
     loadbalancing/otlp:
       routing_key: service
