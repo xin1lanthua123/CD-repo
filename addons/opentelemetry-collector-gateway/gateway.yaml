@@ -49,7 +49,33 @@ config:
             scrape_interval: 30s
             static_configs:
               - targets:
-                  - kube-prometheus-stack-kube-state-metrics.monitoring.svc.cluster.local:8080
+                  - kube-prometheus-stack-kube-state-metrics.observability.svc.cluster.local:8080
+          - job_name: istio-metrics
+            scrape_interval: 30s
+            static_configs:
+              - targets:
+                  - istiod.istio-system.svc.cluster.local:15014
+          - job_name: istio-envoy
+
+            kubernetes_sd_configs:
+            - role: pod
+
+            relabel_configs:
+
+            - source_labels:
+              - __meta_kubernetes_pod_container_name
+              action: keep
+              regex: istio-proxy
+
+
+            - source_labels:
+              - __meta_kubernetes_pod_ip
+              target_label: __address__
+              replacement: ${1}:15090
+
+
+            - target_label: __metrics_path__
+              replacement: /stats/prometheus
 
 
   processors:
@@ -225,3 +251,14 @@ extraVolumeMounts:
   - name: elastic-ca
     mountPath: /etc/tls/certs/elasticsearch
     readOnly: true
+
+serviceAccount:
+  create: true
+
+clusterRole:
+  create: true
+  rules:
+  - apiGroups: [""]
+    resources: ["pods",
+                "endpoints", "services"]
+    verbs: ["get", "list", "watch"]
