@@ -8,3 +8,8 @@ spec:
     name: frontend
   defaultConfiguration:
     targetType: ip
+  
+    healthCheckConfig:
+      healthCheckProtocol: HTTP
+      healthCheckPath: /_healthz
+      
