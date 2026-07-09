@@ -4,6 +4,9 @@ argocd:
   helm repo update
   kubectl create ns argocd 
   helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
+  
+  kubectl apply -f E:\CD-repo\HTTProute\HTTProute-for-addons\storageclass.yaml
+  
 1.(Layer7) 2.(Layer4)
 
 kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
@@ -20,6 +23,10 @@ istioctl install --set profile=default -y
 kubectl apply -f E:\CD-repo\gateway-api-manifests
 
 kubectl apply -k E:\CD-repo\HTTProute-for-addons
+
+kubectl delete -f E:\CD-repo\gateway-api-manifests
+
+kubectl delete -k E:\CD-repo\HTTProute-for-addons
 
 
 autoscaler:
