@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: grpc-test
+  namespace: online-boutique
+  labels:
+    app: grpc-test
+  annotations:
+    sidecar.istio.io/inject: "true"
+spec:
+  serviceAccountName: frontend
+  containers:
+  - name: grpc-test
+    image: nicolaka/netshoot
+    command:
+    - sleep
+    - "3600"

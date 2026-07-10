@@ -23,6 +23,8 @@ spec:
     - operation:
         paths:
         - /hipstershop.CheckoutService/PlaceOrder
+        - /grpc.reflection.v1.ServerReflection/ServerReflectionInfo
+        - /grpc.reflection.v1alpha.ServerReflection/ServerReflectionInfo
         methods:
         - POST
         ports:
