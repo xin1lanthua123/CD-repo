@@ -2,14 +2,15 @@ apiVersion: gateway.k8s.aws/v1beta1
 kind: TargetGroupConfiguration
 metadata:
   name: app-tg-config
-  namespace: online-boutique
+  namespace: istio-system
 spec:
   targetReference:
-    name: frontend
+    name: istio-ingressgateway
   defaultConfiguration:
     targetType: ip
-  
     healthCheckConfig:
-      healthCheckProtocol: HTTP
-      healthCheckPath: /_healthz
+        healthCheckProtocol: HTTP
+        healthCheckPort: "15021"
+        healthCheckPath: /healthz/ready
+
       

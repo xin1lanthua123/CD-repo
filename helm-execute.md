@@ -10,16 +10,13 @@ argocd:
 
 kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
 
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml #(Layer7) 
 
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml 
-
-1.(Layer7) 2.(Layer4)
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml #(Layer4)
 
 
-istioctl install --set profile=default -y
+istioctl install -f E:\CD-repo\istio-serviceMesh\istio.yaml -y
 
-istioctl install --set profile=minimal -y
 
 kubectl apply -f E:\CD-repo\namespace.yaml
 
