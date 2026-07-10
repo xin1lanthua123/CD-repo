@@ -19,6 +19,8 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 
 istioctl install --set profile=default -y
 
+istioctl install --set profile=minimal -y
+
 kubectl apply -f E:\CD-repo\namespace.yaml
 
 kubectl apply -f E:\CD-repo\Argocd\microservices-appset.yaml

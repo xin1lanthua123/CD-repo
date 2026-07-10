@@ -1,0 +1,19 @@
+apiVersion: networking.istio.io/v1
+kind: Gateway
+metadata:
+  name: frontend-istio-ingressgateway
+  namespace: istio-system
+spec:
+
+  selector:
+    istio: ingressgateway
+
+  servers:
+
+  - hosts:
+    - boutique.quanldl.click
+
+    port:
+      number: 80
+      protocol: HTTP
+      name: http

@@ -23,7 +23,7 @@ spec:
         - cluster.local/ns/{{ .Release.Namespace }}/sa/default
         {{- end }}
         {{- if .Values.frontend.virtualService.create }}
-        - cluster.local/ns/{{ .Values.frontend.virtualService.gateway.namespace }}/sa/{{ .Values.frontend.virtualService.gateway.name }}
+        - cluster.local/ns/{{ .Values.frontend.virtualService.gateway.namespace }}/sa/{{ .Values.frontend.virtualService.gateway.sa }}
         {{- end }}
     to:
   {{- end }}

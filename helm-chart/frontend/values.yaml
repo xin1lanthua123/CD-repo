@@ -95,14 +95,15 @@ frontend:
   platform: aws
   singleSharedSession: false
   virtualService:
-    create: false
+    create: true
     hosts:
-    - "*"
+    - "boutique.quanldl.click"
     gateway:
-      name: asm-ingressgateway
-      namespace: asm-ingress
-      labelKey: asm
-      labelValue: ingressgateway
+      name: frontend-istio-ingressgateway
+      namespace: istio-system
+      labelKey: app
+      labelValue: istio-ingressgateway
+      sa: istio-ingressgateway-service-account
   resources:
     requests:
       cpu: 100m
