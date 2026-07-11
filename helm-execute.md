@@ -1,19 +1,19 @@
 aws eks update-kubeconfig --name dev-my-app-eks --region us-east-1
 
-argocd:
+# argocd:
+istioctl install -f E:\CD-repo\istio-serviceMesh\istio.yaml -y
+
 helm repo update
 kubectl create ns argocd 
 helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
 
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml #(Layer7) 
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/standard-install.yaml # (Layer7) 
 
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml #(Layer4)
+kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml # (Layer4)
 
 kubectl apply -f E:\CD-repo\gateway-api-manifests
 
 kubectl apply -k E:\CD-repo\HTTProute
-
-istioctl install -f E:\CD-repo\istio-serviceMesh\istio.yaml -y
 
 kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
 
