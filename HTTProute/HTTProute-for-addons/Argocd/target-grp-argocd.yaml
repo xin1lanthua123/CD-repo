@@ -9,5 +9,5 @@ spec:
   defaultConfiguration:
     targetType: ip
     healthCheckConfig:
-      path: /healthz
-      protocol: HTTP
+      healthCheckProtocol: HTTP
+      healthCheckPath: /healthz

@@ -32,6 +32,8 @@ spec:
     ports:
      - port: 8080
        protocol: TCP
+     - port: 15006 # BẮT BUỘC: Thêm cổng này để luật 'from' áp dụng lên cả traffic đi qua Istio Mesh
+      protocol: TCP
   {{- end }}
   egress:
   - {}

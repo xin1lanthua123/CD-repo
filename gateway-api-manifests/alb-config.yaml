@@ -8,9 +8,6 @@ metadata:
 spec:
   scheme: internet-facing
 
-  loadBalancerSubnets:
-    - identifier: subnet-04fdd40cd56314d62
-    - identifier: subnet-07be3ef9b87692036
 
   listenerConfigurations:
     - defaultCertificate: arn:aws:acm:us-east-1:816069145490:certificate/9e21680d-c654-42b8-8ab6-351f0bedd299
