@@ -17,14 +17,13 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 
 kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml # (Layer4)
 
+kubectl apply -f E:\CD-repo\namespace.yaml
+
+kubectl apply -f E:\CD-repo\Argocd\microservices-appset.yaml
 
 kubectl apply -k E:\CD-repo\HTTProute
 
 kubectl apply -f E:\CD-repo\gateway-api-manifests
-
-kubectl apply -f E:\CD-repo\namespace.yaml
-
-kubectl apply -f E:\CD-repo\Argocd\microservices-appset.yaml
 
 # delete
 
