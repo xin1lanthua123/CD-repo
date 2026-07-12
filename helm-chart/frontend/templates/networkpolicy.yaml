@@ -14,21 +14,22 @@ spec:
   - Ingress
   - Egress
   ingress:
-  {{- if .Values.frontend.externalService }}
   - {}
-  {{- else }}
-  - from:
-    - podSelector:
-        matchLabels:
-          app: {{ .Values.loadGenerator.name }}
-    {{- if .Values.frontend.virtualService.create }}
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: {{ .Values.frontend.virtualService.gateway.namespace }}
-      podSelector:
-        matchLabels:
-          {{ .Values.frontend.virtualService.gateway.labelKey }}: {{ .Values.frontend.virtualService.gateway.labelValue }}
-    {{- end }}
+  # {{- if .Values.frontend.externalService }}
+  # - {}
+  # {{- else }}
+  # - from:
+  #   - podSelector:
+  #       matchLabels:
+  #         app: {{ .Values.loadGenerator.name }}
+  #   {{- if .Values.frontend.virtualService.create }}
+  #   - namespaceSelector:
+  #       matchLabels:
+  #         kubernetes.io/metadata.name: {{ .Values.frontend.virtualService.gateway.namespace }}
+  #     podSelector:
+  #       matchLabels:
+  #         {{ .Values.frontend.virtualService.gateway.labelKey }}: {{ .Values.frontend.virtualService.gateway.labelValue }}
+  #   {{- end }}
     ports:
      - port: 8080
        protocol: TCP

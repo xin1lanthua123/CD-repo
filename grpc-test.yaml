@@ -1,17 +1,21 @@
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
   name: grpc-test
   namespace: online-boutique
-  labels:
-    app: grpc-test
-  annotations:
-    sidecar.istio.io/inject: "true"
 spec:
-  serviceAccountName: frontend
-  containers:
-  - name: grpc-test
-    image: nicolaka/netshoot
-    command:
-    - sleep
-    - "3600"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grpc-test
+  template:
+    metadata:
+      labels:
+        app: grpc-test
+    spec:
+      containers:
+        - name: alpine
+          image: alpine:latest
+          command:
+            - sleep
+            - "3600"
