@@ -2,33 +2,62 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: policy-test
+  labels:
+    # pod-security.kubernetes.io/enforce: restricted
+    istio.io/rev: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: policy-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web
+  template:
+    metadata:
+      labels:
+        app: web
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
 ---
 apiVersion: v1
-kind: Pod
+kind: Service
 metadata:
-  name: nginx-pod
+  name: nginx
   namespace: policy-test
-  labels:
+spec:
+  selector:
     app: web
-spec:
-  containers:
-  - name: nginx
-    image: nginx:alpine
-    ports:
-    - containerPort: 80
+  ports:
+  - port: 80
+    targetPort: 80
 ---
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
 metadata:
-  name: client-pod
+  name: client
   namespace: policy-test
-  labels:
-    app: client
 spec:
-  containers:
-  - name: alpine
-    image: alpine
-    command: ["sleep", "3600"]
+  replicas: 1
+  selector:
+    matchLabels:
+      app: client
+  template:
+    metadata:
+      labels:
+        app: client
+    spec:
+      containers:
+      - name: alpine
+        image: alpine
+        command: ["sleep", "3600"]
 ---
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
@@ -38,8 +67,7 @@ metadata:
 spec:
   podSelector:
     matchLabels:
-      app: web # Áp dụng chính sách này lên các pod có nhãn app=web
+      app: web
   policyTypes:
-  - Ingress
-  ingress: [] # Mảng trống = Không cho phép bất kỳ ai đi vào
-
+    - Ingress
+  ingress: []

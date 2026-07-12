@@ -1,11 +1,15 @@
 aws eks update-kubeconfig --name dev-my-app-eks --region us-east-1
 
-# argocd:
+# istio
 istioctl install -f E:\CD-repo\istio-serviceMesh\istio.yaml -y
 
+
+# argocd 
 <!-- helm repo update --> 
 kubectl create ns argocd 
 helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
+
+# resources and workloads
 
 kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
 
@@ -22,9 +26,16 @@ kubectl apply -f E:\CD-repo\namespace.yaml
 
 kubectl apply -f E:\CD-repo\Argocd\microservices-appset.yaml
 
+# delete
+
 kubectl delete -f E:\CD-repo\gateway-api-manifests
 
 kubectl delete -k E:\CD-repo\HTTProute
+
+
+
+
+# addons manual deployment
 
 
 autoscaler:
@@ -59,8 +70,6 @@ ECK stack + jaeger:
   helm upgrade --install jaeger jaegertracing/jaeger -n observability -f E:\CD-repo\addons\jaeger\jaeger-values.yaml
 
     helm upgrade --install eck-beats elastic/eck-beats -f E:\CD-repo\addons\eck-beats-0.19.1.yaml
-
-
 
   kubectl get secret es-ca -n observability -o yaml \
 | sed 's/namespa -n observability/namespace: observability/' \

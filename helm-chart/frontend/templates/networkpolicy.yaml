@@ -32,8 +32,7 @@ spec:
     ports:
      - port: 8080
        protocol: TCP
-     - port: 15006 
-       protocol: TCP
+
   {{- end }}
   egress:
   - {}
