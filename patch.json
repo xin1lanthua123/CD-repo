@@ -1,0 +1,11 @@
+{
+  "spec": {
+    "template": {
+      "metadata": {
+        "annotations": {
+          "proxy.istio.io/config": "{\"accessLogFile\":\"/dev/stdout\"}"
+        }
+      }
+    }
+  }
+}
