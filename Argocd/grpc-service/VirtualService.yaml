@@ -1,0 +1,35 @@
+apiVersion: networking.istio.io/v1
+kind: VirtualService
+metadata:
+  name: checkoutservice-vs
+
+spec:
+  hosts:
+    - checkoutservice
+
+  http:
+    - name: primary-route
+
+      match:
+        - headers:
+            content-type:
+              prefix: application/grpc
+
+      retries:
+        attempts: 3
+        perTryTimeout: 2s
+        retryOn: unavailable,cancelled,resource-exhausted
+
+      timeout: 5s
+
+      route:
+
+        - destination:
+            host: checkoutservice
+            subset: stable
+          weight: 100
+
+        - destination:
+            host: checkoutservice
+            subset: canary
+          weight: 0

@@ -1,33 +1,33 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: myapp 
+  name: checkoutservice
 spec:
   replicas: 2
 
   selector:
     matchLabels:
-      app: adservice
+      app: checkoutservice
 
   template:
     metadata:
       labels:
-        app: adservice
+        app: checkoutservice
     spec:
       containers:
-      - name: adservice
-        image: adservice:1.0.0
+      - name: checkoutservice
+        image: checkoutservice:1.0.0
 
   strategy:
     canary:
       trafficRouting:
         istio:
           virtualService:
-            name: my-app-vs # Trỏ đúng tên VirtualService đã tạo ở trên
+            name: checkoutservice-vr # Trỏ đúng tên VirtualService đã tạo ở trên
             routes:
             - primary-route # Khớp với tên "name: primary-route" trong VirtualService
           destinationRule:
-            name: my-app-dr # Trỏ đúng tên DestinationRule đã tạo ở trên
+            name: checkoutservice-dr # Trỏ đúng tên DestinationRule đã tạo ở trên
             canarySubsetName: canary # Tên của subset nhận bản cập nhật mới
             stableSubsetName: stable # Tên của subset giữ bản chạy ổn định
       # Các bước tăng % Traffic dần dần (Canary Steps)s

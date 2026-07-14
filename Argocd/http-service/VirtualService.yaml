@@ -1,12 +1,12 @@
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
-  name: my-app-vs
+  name: checkoutservice-vs
 
 spec:
 
   hosts:
-    - adservice
+    - checkoutservice
 
   http:
 
@@ -28,11 +28,11 @@ spec:
       route:
 
         - destination:
-            host: adservice
+            host: checkoutservice
             subset: stable
           weight: 100
 
         - destination:
-            host: adservice
+            host: checkoutservice
             subset: canary
           weight: 0

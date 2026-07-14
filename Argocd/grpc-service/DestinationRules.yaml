@@ -1,0 +1,38 @@
+apiVersion: networking.istio.io/v1
+kind: DestinationRule
+metadata:
+  name: checkoutservice-dr
+spec:
+  host: checkoutservice
+
+  trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
+
+    loadBalancer:
+      simple: LEAST_REQUEST
+
+    connectionPool:
+      tcp:
+        maxConnections: 100
+        connectTimeout: 5s
+      
+      http: # (for rgpc) 
+        http2MaxRequests: 500
+        idleTimeout: 30s
+
+    outlierDetection:
+      consecutive5xxErrors: 5
+      interval: 10s
+      baseEjectionTime: 30s
+      maxEjectionPercent: 50
+
+  subsets:
+
+    - name: stable
+      labels:
+        rollouts-pod-template-hash: stable
+
+    - name: canary
+      labels:
+        rollouts-pod-template-hash: canary
