@@ -1,12 +1,12 @@
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
-  name: checkoutservice-vs
+  name: frontend-vs
 
 spec:
 
   hosts:
-    - checkoutservice
+    - boutique.quanldl.click
 
   http:
 
@@ -28,11 +28,11 @@ spec:
       route:
 
         - destination:
-            host: checkoutservice
+            host: frontend
             subset: stable
           weight: 100
 
         - destination:
-            host: checkoutservice
+            host: frontend
             subset: canary
           weight: 0

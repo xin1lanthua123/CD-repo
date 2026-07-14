@@ -1,9 +1,9 @@
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
-  name: checkoutservice-dr
+  name: frontend-dr
 spec:
-  host: checkoutservice
+  host: frontend
 
   trafficPolicy:
 

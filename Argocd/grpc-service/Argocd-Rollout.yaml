@@ -98,4 +98,7 @@ spec:
 
       analysis:
         templates:
-        - templateName: success-rate
+        - templateName: checkoutservice-success-rate
+        args:
+        - name: service-name
+          value: checkoutservice

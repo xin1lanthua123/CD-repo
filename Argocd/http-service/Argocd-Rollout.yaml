@@ -1,33 +1,104 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
 metadata:
-  name: checkoutservice
+  name: frontend
 spec:
   replicas: 2
 
   selector:
     matchLabels:
-      app: checkoutservice
+      app: frontend
 
   template:
     metadata:
       labels:
-        app: checkoutservice
+        app: frontend
     spec:
+      serviceAccountName: frontend
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+
       containers:
-      - name: checkoutservice
-        image: checkoutservice:1.0.0
+      - name: server
+        image: frontend:1.0.0
+        securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+        readinessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-readiness-probe"
+        livenessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-liveness-probe"
+        env:
+          - name: PORT
+            value: "8080"
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: "productcatalogservice:3550"
+          - name: CURRENCY_SERVICE_ADDR
+            value: "currencyservice:7000"
+          - name: CART_SERVICE_ADDR
+            value: "cartservice:7070"
+          - name: RECOMMENDATION_SERVICE_ADDR
+            value: "recommendationservice:8080"
+          - name: SHIPPING_SERVICE_ADDR
+            value: "shippingservice:50051"
+          - name: CHECKOUT_SERVICE_ADDR
+            value: "checkoutservice:5050"
+          - name: AD_SERVICE_ADDR
+            value: "adservice:9555"
+          - name: SHOPPING_ASSISTANT_SERVICE_ADDR
+            value: "shoppingassistantservice:80"
+          # # ENV_PLATFORM: One of: local, gcp, aws, azure, onprem, alibaba
+          # # When not set, defaults to "local" unless running in GKE, otherwies auto-sets to gcp
+          # - name: ENV_PLATFORM
+          #   value: "aws"
+          - name: ENABLE_PROFILER
+            value: "0"
+          # - name: CYMBAL_BRANDING
+          #   value: "true"
+          # - name: ENABLE_ASSISTANT
+          #   value: "true"
+          # - name: FRONTEND_MESSAGE
+          #   value: "Replace this with a message you want to display on all pages."
+          # As part of an optional Google Cloud demo, you can run an optional microservice called the "packaging service".
+          # - name: PACKAGING_SERVICE_URL
+          #   value: "" # This value would look like "http://123.123.123"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 64Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
 
   strategy:
     canary:
       trafficRouting:
         istio:
           virtualService:
-            name: checkoutservice-vr # Trỏ đúng tên VirtualService đã tạo ở trên
+            name: frontend-vr # Trỏ đúng tên VirtualService đã tạo ở trên
             routes:
             - primary-route # Khớp với tên "name: primary-route" trong VirtualService
           destinationRule:
-            name: checkoutservice-dr # Trỏ đúng tên DestinationRule đã tạo ở trên
+            name: frontend-dr # Trỏ đúng tên DestinationRule đã tạo ở trên
             canarySubsetName: canary # Tên của subset nhận bản cập nhật mới
             stableSubsetName: stable # Tên của subset giữ bản chạy ổn định
       # Các bước tăng % Traffic dần dần (Canary Steps)s
@@ -51,4 +122,7 @@ spec:
 
       analysis:
         templates:
-        - templateName: success-rate
+        - templateName: frontend-success-rate
+        args:
+        - name: service-name
+          value: frontend
