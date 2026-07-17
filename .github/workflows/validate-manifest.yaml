@@ -83,6 +83,7 @@ jobs:
             echo "services_changed=false" >> "$GITHUB_OUTPUT"
           fi
 
+
           echo "services=$SERVICES" >> "$GITHUB_OUTPUT"
 
   yaml-lint:
