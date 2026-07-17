@@ -1,5 +1,10 @@
 
-{{- if .Values.frontend.create }}
+{{- if and .Values.frontend.create (not (or
+    (eq .Values.frontend.workload.type "deployment")
+    (eq .Values.frontend.workload.type "rollout"))) }}
+{{- fail (printf "frontend.workload.type must be 'deployment' or 'rollout', got '%s'" .Values.frontend.workload.type) }}
+{{- end }}
+{{- if and .Values.frontend.create (eq .Values.frontend.workload.type "deployment") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -8,6 +13,7 @@ metadata:
   labels:
     app: {{ .Values.frontend.name }}
 spec:
+  replicas: {{ .Values.frontend.replicas | default 2 }}
   selector:
     matchLabels:
       app: {{ .Values.frontend.name }}
@@ -105,4 +111,157 @@ spec:
             value: {{ .Values.frontend.singleSharedSession | quote }}
           resources:
             {{- toYaml .Values.frontend.resources | nindent 12 }}
+{{- end }}
+
+---
+{{- if and .Values.frontend.create (eq .Values.frontend.workload.type "rollout") }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Values.frontend.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.frontend.name }}
+spec:
+  replicas: {{ .Values.frontend.replicas | default 2 }}
+  selector:
+    matchLabels:
+      app: {{ .Values.frontend.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.frontend.name }}
+      annotations:
+        sidecar.istio.io/rewriteAppHTTPProbers: "true"
+    spec:
+      {{- if .Values.serviceAccounts.create }}
+      serviceAccountName: {{ .Values.frontend.name }}
+      {{- else }}
+      serviceAccountName: default
+      {{- end }}
+      {{- if .Values.securityContext.enable }}
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        {{- if .Values.seccompProfile.enable }}
+        seccompProfile:
+          type: {{ .Values.seccompProfile.type }}
+        {{- end }}
+      {{- end }}
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: {{ .Values.frontend.name }}
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: {{ .Values.frontend.name }}
+      containers:
+        - name: server
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+          image: {{ .Values.images.frontend.repository }}:{{ .Values.images.frontend.tag | default .Chart.AppVersion }}
+          ports:
+          - containerPort: 8080
+          readinessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-readiness-probe"
+          livenessProbe:
+            initialDelaySeconds: 10
+            httpGet:
+              path: "/_healthz"
+              port: 8080
+              httpHeaders:
+              - name: "Cookie"
+                value: "shop_session-id=x-liveness-probe"
+          env:
+          - name: PORT
+            value: "8080"
+          - name: PRODUCT_CATALOG_SERVICE_ADDR
+            value: "{{ .Values.productCatalogService.name }}:3550"
+          - name: CURRENCY_SERVICE_ADDR
+            value: "{{ .Values.currencyService.name }}:7000"
+          - name: CART_SERVICE_ADDR
+            value: "{{ .Values.cartService.name }}:7070"
+          - name: RECOMMENDATION_SERVICE_ADDR
+            value: "{{ .Values.recommendationService.name }}:8080"
+          - name: SHIPPING_SERVICE_ADDR
+            value: "{{ .Values.shippingService.name }}:50051"
+          - name: CHECKOUT_SERVICE_ADDR
+            value: "{{ .Values.checkoutService.name }}:5050"
+          - name: AD_SERVICE_ADDR
+            value: "{{ .Values.adService.name }}:9555"
+          - name: SHOPPING_ASSISTANT_SERVICE_ADDR
+            value: "{{ .Values.shoppingAssistantService.name }}:80"
+          - name: ENV_PLATFORM
+            value: {{ .Values.frontend.platform | quote }}
+          {{- if .Values.opentelemetryCollector.create }}
+          - name: COLLECTOR_SERVICE_ADDR
+            value: "{{ .Values.opentelemetryCollector.name }}:4317"
+          - name: OTEL_SERVICE_NAME
+            value: "{{ .Values.frontend.name }}"
+          {{- end }}
+          {{- if .Values.googleCloudOperations.tracing }}
+          - name: ENABLE_TRACING
+            value: "1"
+          {{- end }}
+          {{- if .Values.googleCloudOperations.profiler }}
+          - name: ENABLE_PROFILER
+            value: "1"
+          {{- end }}
+          - name: CYMBAL_BRANDING
+            value: {{ .Values.frontend.cymbalBranding | quote }}
+          - name: ENABLE_ASSISTANT
+            value: {{ .Values.shoppingAssistantService.create | quote }}
+          - name: ENABLE_SINGLE_SHARED_SESSION
+            value: {{ .Values.frontend.singleSharedSession | quote }}
+          resources:
+            {{- toYaml .Values.frontend.resources | nindent 12 }}
+  strategy:
+    canary:
+      trafficRouting:
+        istio:
+          virtualService:
+            name:  {{ .Values.frontend.name }}-vr
+            routes:
+            - primary-route
+          destinationRule:
+            name:  {{ .Values.frontend.name }}-dr
+            canarySubsetName: canary
+            stableSubsetName: stable
+      steps:
+      - setWeight: 10
+      - pause: {duration: 60s}
+      - setWeight: 30
+      - pause: {duration: 60s}
+      - setWeight: 50
+      - pause: {duration: 60s}
+      - setWeight: 70
+      - pause: {duration: 60s}
+      - setWeight: 90
+      - pause: {duration: 2m}
+      - setWeight: 100
+      analysis:
+        templates:
+        - templateName:  {{ .Values.frontend.name }}-success-rate
+        args:
+        - name: service-name
+          value: {{ .Values.frontend.name }}
 {{- end }}

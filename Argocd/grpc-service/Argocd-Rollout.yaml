@@ -21,6 +21,22 @@ spec:
         runAsGroup: 1000
         runAsNonRoot: true
         runAsUser: 1000
+      
+      topologySpreadConstraints:
+        - maxSkew: 1 # cho phép độ lệch tối đa là một
+          topologyKey: kubernetes.io/hostname # or hostname
+          whenUnsatisfiable: ScheduleAnyway # or DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: checkoutservice
+              
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: checkoutservice
+
       containers:
       - name: checkoutservice
         image: checkoutservice:1.0.0

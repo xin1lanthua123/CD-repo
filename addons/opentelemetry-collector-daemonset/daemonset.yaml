@@ -107,7 +107,7 @@ config:
     memory_limiter:
       check_interval: 5s
       limit_percentage: 80     # đặt bằng 80% memory limit của container
-      spike_limit_percentage: 25   # buffer cho traffic đột biến
+      spike_limit_percentage: 15   # buffer cho traffic đột biến
 
     k8sattributes:
       auth_type: serviceAccount

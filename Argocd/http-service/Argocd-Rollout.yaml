@@ -21,6 +21,21 @@ spec:
         runAsNonRoot: true
         runAsUser: 1000
 
+      topologySpreadConstraints:
+        - maxSkew: 1 # cho phép độ lệch tối đa là một
+          topologyKey: kubernetes.io/hostname # or hostname
+          whenUnsatisfiable: ScheduleAnyway # or DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app: frontend
+              
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: frontend
+
       containers:
       - name: server
         image: frontend:1.0.0

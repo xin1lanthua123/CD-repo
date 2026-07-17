@@ -89,6 +89,20 @@ securityContext:
 frontend:
   create: true
   name: frontend
+  replicas: 2
+  autoscaling:
+    enabled: true
+
+    minReplicas: 2
+    maxReplicas: 7
+
+    targetCPU: 70
+
+    memory:
+      enabled: true
+      target: 80
+  workload:
+    type: rollout
   externalService: false
   cymbalBranding: false
   # One of: local, gcp, aws, azure, onprem, alibaba. When not set, defaults to "local" unless running in GKE, otherwise auto-sets to gcp.

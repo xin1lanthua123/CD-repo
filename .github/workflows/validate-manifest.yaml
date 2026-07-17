@@ -207,24 +207,7 @@ jobs:
           oci://ghcr.io/${{ github.repository_owner }}/helm
         
         echo "Successfully pushed ${CHART_NAME}:${CHART_VERSION}"
-  update-kustomize-manifest:
-    name: " Update kustomize manifest"
-    needs: 
-      - release-helm-package
-      - detect-changes
-    runs-on: ubuntu-latest
-    if: |   
-      github.ref == 'refs/heads/main'
-    strategy:
-      fail-fast: false 
-      matrix:
-        helm-chart: ${{ fromJson(needs.detect-changes.outputs.helm-chart) }}
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      # - name: update kustomize manifest 
-      #   working-directory: 
+ 
 
         
        

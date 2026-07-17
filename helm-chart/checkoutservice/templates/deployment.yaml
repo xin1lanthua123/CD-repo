@@ -1,4 +1,10 @@
-{{- if .Values.checkoutService.create }}
+{{- if and .Values.checkoutService.create (not (or
+    (eq .Values.checkoutService.workload.type "deployment")
+    (eq .Values.checkoutService.workload.type "rollout"))) }}
+{{- fail (printf "checkoutService.workload.type must be 'deployment' or 'rollout', got '%s'" .Values.checkoutService.workload.type) }}
+{{- end }}
+
+{{- if and .Values.checkoutService.create (eq .Values.checkoutService.workload.type "deployment") }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -7,6 +13,7 @@ metadata:
   labels:
     app: {{ .Values.checkoutService.name }}
 spec:
+  replicas: {{ .Values.checkoutService.replicas | default 2 }}
   selector:
     matchLabels:
       app: {{ .Values.checkoutService.name }}
@@ -81,3 +88,163 @@ spec:
         resources:
           {{- toYaml .Values.checkoutService.resources | nindent 10 }}
 {{- end}}
+---
+{{- if and .Values.checkoutService.create (eq .Values.checkoutService.workload.type "rollout") }}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: {{ .Values.checkoutService.name }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: {{ .Values.checkoutService.name }}
+spec:
+  replicas: {{ .Values.checkoutService.replicas | default 2 }}
+
+  selector:
+    matchLabels:
+      app: {{ .Values.checkoutService.name }}
+
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.checkoutService.name }}
+    spec:
+      {{- if .Values.serviceAccounts.create }}
+      serviceAccountName: {{ .Values.checkoutService.name }}
+      {{- else }}
+      serviceAccountName: default
+      {{- end }}
+
+      terminationGracePeriodSeconds: 30
+
+      {{- if .Values.securityContext.enable }}
+      securityContext:
+        fsGroup: 1000
+        runAsGroup: 1000
+        runAsNonRoot: true
+        runAsUser: 1000
+        {{- if .Values.seccompProfile.enable }}
+        seccompProfile:
+          type: {{ .Values.seccompProfile.type }}
+        {{- end }}
+      {{- end }}
+
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: {{ .Values.checkoutService.name }}
+
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: {{ .Values.checkoutService.name }}
+
+      containers:
+        - name: server
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+
+          image: {{ .Values.images.checkoutservice.repository }}:{{ .Values.images.checkoutservice.tag | default .Chart.AppVersion }}
+
+          ports:
+            - containerPort: 5050
+
+          readinessProbe:
+            grpc:
+              port: 5050
+
+          livenessProbe:
+            grpc:
+              port: 5050
+
+          env:
+            - name: PORT
+              value: "5050"
+
+            - name: PRODUCT_CATALOG_SERVICE_ADDR
+              value: "{{ .Values.productCatalogService.name }}:3550"
+
+            - name: SHIPPING_SERVICE_ADDR
+              value: "{{ .Values.shippingService.name }}:50051"
+
+            - name: PAYMENT_SERVICE_ADDR
+              value: "{{ .Values.paymentService.name }}:50051"
+
+            - name: EMAIL_SERVICE_ADDR
+              value: "{{ .Values.emailService.name }}:5000"
+
+            - name: CURRENCY_SERVICE_ADDR
+              value: "{{ .Values.currencyService.name }}:7000"
+
+            - name: CART_SERVICE_ADDR
+              value: "{{ .Values.cartService.name }}:7070"
+
+            {{- if .Values.opentelemetryCollector.create }}
+            - name: COLLECTOR_SERVICE_ADDR
+              value: "{{ .Values.opentelemetryCollector.name }}:4317"
+
+            - name: OTEL_SERVICE_NAME
+              value: "{{ .Values.checkoutService.name }}"
+            {{- end }}
+
+            {{- if .Values.googleCloudOperations.tracing }}
+            - name: ENABLE_TRACING
+              value: "1"
+            {{- end }}
+
+            {{- if .Values.googleCloudOperations.profiler }}
+            - name: ENABLE_PROFILER
+              value: "1"
+            {{- end }}
+
+          resources:
+            {{- toYaml .Values.checkoutService.resources | nindent 12 }}
+
+  strategy:
+    canary:
+      trafficRouting:
+        istio:
+          virtualService:
+            name: {{ .Values.checkoutService.name }}-vr
+            routes:
+              - primary-route
+          destinationRule:
+            name: {{ .Values.checkoutService.name }}-dr
+            canarySubsetName: canary
+            stableSubsetName: stable
+
+      steps:
+        - setWeight: 10
+        - pause: { duration: 60s }
+
+        - setWeight: 30
+        - pause: { duration: 60s }
+
+        - setWeight: 50
+        - pause: { duration: 60s }
+
+        - setWeight: 70
+        - pause: { duration: 60s }
+
+        - setWeight: 90
+        - pause: { duration: 2m }
+
+        - setWeight: 100
+
+      analysis:
+        templates:
+          - templateName: {{ .Values.checkoutService.name }}-success-rate
+        args:
+          - name: service-name
+            value: {{ .Values.checkoutService.name }}
+{{- end }}

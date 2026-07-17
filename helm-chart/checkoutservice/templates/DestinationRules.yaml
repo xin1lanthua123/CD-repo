@@ -1,11 +1,13 @@
 apiVersion: networking.istio.io/v1
 kind: DestinationRule
 metadata:
-  name: frontend-dr
+  name:  {{ .Values.checkoutService.name }}-dr
 spec:
-  host: frontend
+  host:  {{ .Values.checkoutService.name }}
 
   trafficPolicy:
+    tls:
+      mode: ISTIO_MUTUAL
 
     loadBalancer:
       simple: LEAST_REQUEST
@@ -14,15 +16,10 @@ spec:
       tcp:
         maxConnections: 100
         connectTimeout: 5s
-
-      http:
-        http1MaxPendingRequests: 500
-        maxRequestsPerConnection: 100
-        idleTimeout: 30s
       
-      # http: # (for rgpc) 
-      #   http2MaxRequests: 500
-      #   idleTimeout: 30s
+      http: # (for rgpc) 
+        http2MaxRequests: 500
+        idleTimeout: 30s
 
     outlierDetection:
       consecutive5xxErrors: 5

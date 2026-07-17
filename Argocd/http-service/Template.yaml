@@ -15,7 +15,7 @@ spec:
     failureLimit: 3
     provider:
       prometheus:
-        address: http://prometheus.observability.svc.cluster.local:9090
+        address: http://prometheus.observability.svc.cluster.local:8889
         query: |
           sum(
             rate(
@@ -42,7 +42,7 @@ spec:
     failureLimit: 3
     provider:
       prometheus:
-        address: http://prometheus.observability.svc.cluster.local:9090
+        address: http://prometheus.observability.svc.cluster.local:8889
         query: |
           histogram_quantile(
             0.95,

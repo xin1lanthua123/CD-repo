@@ -1,0 +1,9 @@
+name: external-secrets
+
+repoURL: https://charts.external-secrets.io   
+chart: external-secrets
+version:  2.7.0 
+
+namespace: external-secrets
+
+valuesFile: addons/external-secrets-operator/external-secrets-operator-values.yaml

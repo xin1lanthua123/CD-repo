@@ -83,7 +83,7 @@ config:
     memory_limiter:
       check_interval: 2s
       limit_percentage: 80
-      spike_limit_percentage: 25
+      spike_limit_percentage: 15
 
     transform:
       error_mode: ignore

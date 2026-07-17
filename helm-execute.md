@@ -10,6 +10,11 @@ kubectl apply -f E:\CD-repo\istio-serviceMesh\PeerAuthentication.yaml
 kubectl create ns argocd 
 helm upgrade -install argocd argo/argo-cd -n argocd -f E:\CD-repo\Argocd\helm-values\argocd-values-9.4.0.yaml
 
+<!-- kubectl create secret generic argocd-slack-secret \
+  --from-literal=slack-token="xoxb-your-slack-bot-token-here" \
+  -n argocd -->
+
+
 # resources and workloads
 
 kubectl apply -f E:\CD-repo\Argocd\addons-appset.yaml
@@ -35,6 +40,12 @@ kubectl delete -k E:\CD-repo\HTTProute
 
 
 
+# alert manager
+kubectl create secret generic alertmanager-slack-webhook \
+  --from-literal=slack-webhook-url="<Webhook FQDN>" \
+  -n observability
+
+kubectl get secret alertmanager-slack-webhook -n observability
 # addons manual deployment
 
 

@@ -16,18 +16,18 @@ spec:
   http:
   - name: primary-route
 
-      timeout: 5s
+    timeout: 5s
 
-      retries:
-        attempts: 3
-        perTryTimeout: 2s
+    retries:
+      attempts: 3
+      perTryTimeout: 2s
 
-        retryOn: >
-          gateway-error,
-          connect-failure,
-          refused-stream,
-          unavailable,
-          reset
+      retryOn: >
+        gateway-error,
+        connect-failure,
+        refused-stream,
+        unavailable,
+        reset
   - route:
     - destination:
         host: {{ .Values.frontend.name }}

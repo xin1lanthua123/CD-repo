@@ -81,6 +81,20 @@ securityContext:
 checkoutService:
   create: true
   name: checkoutservice
+  replicas: 2
+  autoscaling:
+    enabled: true
+
+    minReplicas: 2
+    maxReplicas: 7
+
+    targetCPU: 70
+
+    memory:
+      enabled: true
+      target: 80
+  workload:
+    type: rollout
   resources:
     requests:
       cpu: 100m
