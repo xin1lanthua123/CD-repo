@@ -1,10 +1,13 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
+
 metadata:
-  name: microservices-helm
+  name: microservices-dev
   namespace: argocd
+
 spec:
   goTemplate: true
+
   # goTemplateOptions:
   #   - missingkey=error
 
@@ -12,70 +15,108 @@ spec:
     - git:
         repoURL: https://github.com/xin1lanthua123/CD-repo.git
         revision: main
+
         directories:
           - path: helm-chart/*
-        
+
   template:
+
     metadata:
-      name: '{{.path.basename}}'
+
+      name: "{{ .path.basename }}-dev"
+
       annotations:
+
         # ArgoCD Image Updater
-        # Image alias
         argocd-image-updater.argoproj.io/image-list: >
           {{ .path.basename }}=quanldl/{{ .path.basename }}
+
 
         # Helm mapping
         argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-name: image.repository
 
         argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-tag: image.tag
 
-        # Version Strategy
-        argocd-image-updater.argoproj.io/{{ .path.basename }}.update-strategy: semver
 
-        # Allow only SemVer
-        argocd-image-updater.argoproj.io/{{ .path.basename }}.allow-tags: regexp:^v[0-9]+\.[0-9]+\.[0-9]+$
+        # Dev update strategy
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.update-strategy: newest-build
+
+
+        # Accept flexible dev tags
+        #
+        # Examples accepted:
+        # dev
+        # develop
+        # dev001
+        # build2026
+        # feature-cart-v2
+        # v1.0.0-dev
+        #
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.allow-tags: regexp:^[a-zA-Z0-9][a-zA-Z0-9._-]*$
+
 
         # Ignore latest
         argocd-image-updater.argoproj.io/{{ .path.basename }}.ignore-tags: latest
 
+
         # Force update
         argocd-image-updater.argoproj.io/{{ .path.basename }}.force-update: "true"
 
-        # Docker Hub Pull Secret
-        # argocd-image-updater.argoproj.io/{{ .path.basename }}.pull-secret: pullsecret:argocd/dockerhub-secret
 
-        # Git Write Back
+        # Git write back
         argocd-image-updater.argoproj.io/write-back-method: git
 
         argocd-image-updater.argoproj.io/git-branch: main
 
         argocd-image-updater.argoproj.io/write-back-target: helmvalues
 
-        # Git Commit Identity
+
+        # Git commit identity
         argocd-image-updater.argoproj.io/git-commit-user-name: argocd-image-updater
 
         argocd-image-updater.argoproj.io/git-commit-user-email: bot@github.com
+
+
     spec:
+
       project: default
 
+
       source:
+
         repoURL: https://github.com/xin1lanthua123/CD-repo.git
+
         targetRevision: main
-        path: '{{.path.path}}'
+
+        path: "{{ .path.path }}"
+
+
         helm:
+
           valueFiles:
-            - values.yaml
+
+            - values-dev.yaml
+
 
       destination:
+
         server: https://kubernetes.default.svc
-        namespace: online-boutique
+
+        namespace: online-boutique-dev
+
 
       syncPolicy:
+
         automated:
+
           prune: true
+
           selfHeal: true
+
+
         syncOptions:
-          - Validate=true
+
           - CreateNamespace=true
+          - Validate=true
           - PruneLast=true
           - ApplyOutOfSyncOnly=true

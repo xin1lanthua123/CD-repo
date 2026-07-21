@@ -1,0 +1,6 @@
+name: rollout
+repoURL: https://argoproj.github.io/argo-helm
+chart: argo-rollouts
+version: 2.41.0
+namespace: argocd
+valuesFile: addons/argocd-rollouts/argocd-rollouts-values-2.41.0.yaml
