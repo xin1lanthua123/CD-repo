@@ -51,6 +51,8 @@ spec:
 
         argocd-image-updater.argoproj.io/write-back-target: helmvalues
 
+        argocd-image-updater.argoproj.io/git-repository: secret:argocd/github-app-credentials
+
         # Git Commit Identity
         argocd-image-updater.argoproj.io/git-commit-user-name: argocd-image-updater
 
