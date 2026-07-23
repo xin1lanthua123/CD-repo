@@ -33,9 +33,9 @@ spec:
 
 
         # Helm mapping
-        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-name: image.repository
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-name: images.repository
 
-        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-tag: image.tag
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-tag: images.tag
 
 
         # Dev update strategy
