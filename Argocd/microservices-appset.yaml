@@ -25,9 +25,9 @@ spec:
           {{ .path.basename }}=quanldl/{{ .path.basename }}
 
         # Helm mapping
-        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-name: image.repository
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-name: images.repository
 
-        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-tag: image.tag
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-tag: images.tag
 
         # Version Strategy
         argocd-image-updater.argoproj.io/{{ .path.basename }}.update-strategy: semver
@@ -50,8 +50,6 @@ spec:
         argocd-image-updater.argoproj.io/git-branch: main
 
         argocd-image-updater.argoproj.io/write-back-target: helmvalues
-
-        argocd-image-updater.argoproj.io/git-repository: secret:argocd/github-app-credentials
 
         # Git Commit Identity
         argocd-image-updater.argoproj.io/git-commit-user-name: argocd-image-updater
