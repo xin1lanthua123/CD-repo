@@ -1,9 +1,6 @@
 name: kube-prometheus-stack
-
 repoURL: https://prometheus-community.github.io/helm-charts
 chart: kube-prometheus-stack
 version: 87.10.1
-
 namespace: observability
-
 valuesFile: addons/kube-prometheus-stack/kube-prometheus-stack-values.yaml

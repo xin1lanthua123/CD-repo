@@ -66,7 +66,7 @@ spec:
 
   roles:
     - name: admin
-      description: Full quyền quản lý addons (platform team)
+      description: Full addon management privileges (platform team)
       policies:
         - p, proj:addons:admin, applications, *, addons/*, allow
         - p, proj:addons:admin, repositories, *, *, allow
@@ -74,12 +74,50 @@ spec:
         - your-org:platform-team
 
     - name: readonly
-      description: Chỉ xem, không sync/tạo sửa
+      description: View only, do not sync/create/edit.
       policies:
         - p, proj:addons:readonly, applications, get, addons/*, allow
       groups:
         - your-org:developers
 
   # Chặn xoá nhầm project khi còn Application con
+  orphanedResources:
+    warn: true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: addons-project
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: "Project for managing Addons and System Tools for the Cluster"
+
+  sourceRepos:
+    - '*'
+
+  destinations:
+    - server: https://default.svc
+      namespace: '*'
+
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  
+  roles:
+    - name: admin
+      description: Full addon management privileges (platform team)
+      policies:
+        - p, proj:addons:admin, applications, *, addons/*, allow
+        - p, proj:addons:admin, repositories, *, *, allow
+      groups:
+        - your-org:platform-team
+
   orphanedResources:
     warn: true

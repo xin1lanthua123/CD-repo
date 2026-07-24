@@ -1,9 +1,6 @@
 name: jaeger
-
 repoURL: https://jaegertracing.github.io/helm-charts
 chart: jaeger
 version: 4.11.1
-
 namespace: observability
-
 valuesFile: addons/jaeger/jaeger-values.yaml
