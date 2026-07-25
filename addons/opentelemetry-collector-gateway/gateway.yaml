@@ -92,9 +92,10 @@ config:
           statements:
             - replace_pattern(name, "\\?.*", "")
             - replace_match(name, "GET /api/product/*", "GET /api/product/{productId}")
+          
     tail_sampling:
       decision_wait: 10s
-      num_traces: 100000
+      num_traces: 10000
       expected_new_traces_per_sec: 500
       policies:
 

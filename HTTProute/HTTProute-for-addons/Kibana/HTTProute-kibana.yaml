@@ -5,7 +5,7 @@ metadata:
   namespace: observability
 spec:
   hostnames:
-   - "kibana.quanldl.click"
+   - "kibana.quan.click"
   parentRefs:
   - group: gateway.networking.k8s.io
     namespace: default

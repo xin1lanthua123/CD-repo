@@ -5,7 +5,7 @@ metadata:
   namespace: observability
 spec:
   hostnames:
-   - "grafana.quanldl.click"
+   - "grafana.quan.click"
   parentRefs:
   - group: gateway.networking.k8s.io
     kind: Gateway

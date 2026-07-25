@@ -5,7 +5,7 @@ metadata:
   namespace: observability
 spec:
   hostnames:
-   - "prometheus.quanldl.click"
+   - "prometheus.quan.click"
   parentRefs:
   - group: gateway.networking.k8s.io
     namespace: default
