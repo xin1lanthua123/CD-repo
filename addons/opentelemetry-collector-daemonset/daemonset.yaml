@@ -132,7 +132,7 @@ config:
       timeout: 3s               # gửi sau 3s dù chưa đủ batch
 
   exporters:
-    loadbalancing/otlp-trace:
+    loadbalancing/traces:
       routing_key: traceID
       protocol:
         otlp:
@@ -153,11 +153,10 @@ config:
         dns:
           hostname: opentelemetrycollector-gateway.observability.svc.cluster.local:4317
 
-    loadbalancing/otlp:
+    loadbalancing/metrics:
       routing_key: service
       protocol:
         otlp:
-          endpoint: opentelemetrycollector-gateway:4317
           timeout: 5s
           tls:
             insecure: true
@@ -173,10 +172,31 @@ config:
 
       resolver:
        dns:
-        hostname: opentelemetrycollector-gateway.otel.svc.cluster.local:4317
+        hostname: opentelemetrycollector-gateway.observability.svc.cluster.local:4317
+      
+    loadbalancing/logs:
+      routing_key: service
+      protocol:
+        otlp:
+          timeout: 5s
+          tls:
+            insecure: true
+          sending_queue:
+            enabled: true
+            num_consumers: 5
+            queue_size: 1000
+          retry_on_failure:
+            enabled: true
+            initial_interval: 5s
+            max_interval: 30s
+            max_elapsed_time: 300s     # bỏ cuộc sau 5 phút
 
-    debug:
-      verbosity: detailed
+      resolver:
+       dns:
+        hostname: opentelemetrycollector-gateway.observability.svc.cluster.local:4317
+
+    # debug:
+    #   verbosity: detailed
   extensions:
    health_check:
     endpoint: 0.0.0.0:13133
@@ -196,17 +216,17 @@ config:
       traces:
         receivers: [otlp]
         processors: [memory_limiter, k8sattributes, batch]
-        exporters: [loadbalancing/otlp-trace]
+        exporters: [loadbalancing/traces] #[debug,loadbalancing/traces]
 
       metrics:
-        receivers: [otlp,kubeletstats,k8s_cluster]
+        receivers: [otlp,kubeletstats,k8s_cluster,hostmetrics]
         processors: [memory_limiter, k8sattributes, batch]
-        exporters: [loadbalancing/otlp]
+        exporters: [loadbalancing/metrics] #[debug,loadbalancing/metrics]
 
       logs:
         receivers: [otlp, filelog]
         processors: [memory_limiter, k8sattributes, batch]
-        exporters: [debug]
+        exporters: [loadbalancing/logs] #[debug,loadbalancing/logs]
     telemetry:
       resource:
         k8s.namespace.name: "${env:OTEL_K8S_NAMESPACE}"

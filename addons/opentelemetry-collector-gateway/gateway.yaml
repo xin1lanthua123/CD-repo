@@ -153,8 +153,8 @@ config:
         queue_size: 5000
       
 
-    debug:
-      verbosity: detailed
+    # debug:
+    #   verbosity: detailed
 
   connectors:
     spanmetrics:
