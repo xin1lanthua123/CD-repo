@@ -101,6 +101,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check yamllint config
+        run: |
+          ls -la
+          echo "----- yamllint files -----"
+          find . -maxdepth 2 -type f \( -name '.yamllint' -o -name '.yamllint.yml' -o -name '.yamllint.yaml' \) -print
+
       - uses: ibiqlik/action-yamllint@v3
         with:
           file_or_dir: .
