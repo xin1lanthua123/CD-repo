@@ -5,13 +5,20 @@ rules:
     max: 200
     level: warning
 
-  document-start:
-    present: false
+  document-start: disable
+
+  comments: disable
 
   comments-indentation: disable
 
-  trailing-spaces: enable
+  trailing-spaces:
+    level: warning
 
-  new-lines:
-    type: unix
+  empty-lines:
+    level: warning
 
+  new-line-at-end-of-file:
+    level: warning
+
+  truthy:
+    level: warning
