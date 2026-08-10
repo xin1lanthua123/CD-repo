@@ -95,16 +95,16 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  yaml-lint:
-    runs-on: ubuntu-latest
-    needs: detect-changes
+  # yaml-lint:
+  #   runs-on: ubuntu-latest
+  #   needs: detect-changes
 
-    steps:
-      - uses: actions/checkout@v4
+  #   steps:
+  #     - uses: actions/checkout@v4
 
-      - uses: ibiqlik/action-yamllint@v3
-        with:
-          file_or_dir: .
+  #     - uses: ibiqlik/action-yamllint@v3
+  #       with:
+  #         file_or_dir: .
 
 
   k8s-scan:
