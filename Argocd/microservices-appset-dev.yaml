@@ -25,56 +25,55 @@ spec:
 
       name: "{{ .path.basename }}-dev"
 
-      # annotations:
+      annotations:
 
-      #   # ArgoCD Image Updater
-      #   argocd-image-updater.argoproj.io/image-list: >
-      #     {{ .path.basename }}=quanldl/{{ .path.basename }}
-
-
-      #   # Helm mapping
-      #   argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-name: images.repository
-
-      #   argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-tag: images.tag
+        # ArgoCD Image Updater
+        argocd-image-updater.argoproj.io/image-list: >
+          {{ .path.basename }}=quanldl/{{ .path.basename }}
 
 
-      #   # Dev update strategy
-      #   argocd-image-updater.argoproj.io/{{ .path.basename }}.update-strategy: newest-build
+        # Helm mapping
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-name: images.repository
+
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.helm.image-tag: images.tag
 
 
-      #   # Accept flexible dev tags
-      #   #
-      #   # Examples accepted:
-      #   # dev
-      #   # develop
-      #   # dev001
-      #   # build2026
-      #   # feature-cart-v2
-      #   # v1.0.0-dev
-      #   #
-      #   argocd-image-updater.argoproj.io/{{ .path.basename }}.allow-tags: regexp:^[a-zA-Z0-9][a-zA-Z0-9._-]*$
+        # Dev update strategy
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.update-strategy: newest-build
 
 
-      #   # Ignore latest
-      #   argocd-image-updater.argoproj.io/{{ .path.basename }}.ignore-tags: latest
+        # Accept flexible dev tags
+        #
+        # Examples accepted:
+        # dev
+        # develop
+        # dev001
+        # build2026
+        # feature-cart-v2
+        # v1.0.0-dev
+        #
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.allow-tags: regexp:^[a-zA-Z0-9][a-zA-Z0-9._-]*$
 
 
-      #   # Force update
-      #   argocd-image-updater.argoproj.io/{{ .path.basename }}.force-update: "true"
+        # Ignore latest
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.ignore-tags: latest
 
 
-      #   # Git write back
-      #   argocd-image-updater.argoproj.io/write-back-method: git
-
-      #   argocd-image-updater.argoproj.io/git-branch: main
-
-      #   argocd-image-updater.argoproj.io/write-back-target: helmvalues
+        # Force update
+        argocd-image-updater.argoproj.io/{{ .path.basename }}.force-update: "true"
 
 
-      #   # Git commit identity
-      #   argocd-image-updater.argoproj.io/git-commit-user-name: argocd-image-updater
+        # Git write back
+        argocd-image-updater.argoproj.io/write-back-method: git
 
-      #   argocd-image-updater.argoproj.io/git-commit-user-email: bot@github.com
+        argocd-image-updater.argoproj.io/git-branch: main
+
+        argocd-image-updater.argoproj.io/write-back-target: helmvalues:values-dev.yaml
+
+        # Git commit identity
+        argocd-image-updater.argoproj.io/git-commit-user-name: argocd-image-updater
+
+        argocd-image-updater.argoproj.io/git-commit-user-email: bot@github.com
 
 
     spec:
