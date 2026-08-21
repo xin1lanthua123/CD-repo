@@ -5,7 +5,7 @@ metadata:
   namespace: istio-system
 spec:
   hostnames:
-    - "boutique.quanldl.click"
+    - "boutique.quan.click"
   parentRefs:
   - group: gateway.networking.k8s.io
     namespace: default

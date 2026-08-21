@@ -1,0 +1,6 @@
+name: istio-base
+repoURL: https://istio-release.storage.googleapis.com/charts
+chart: base
+version: 1.30.3
+namespace: istio-system
+valuesFile: addons/istio-base/istio-base-values.yaml

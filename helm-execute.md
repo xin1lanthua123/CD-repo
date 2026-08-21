@@ -1,4 +1,4 @@
-aws eks update-kubeconfig --name dev-my-app-eks --region us-east-1
+aws eks update-kubeconfig --name dev-online-boutique-eks --region us-east-1
 
 # istio
 istioctl install -f E:\CD-repo\istio-serviceMesh\istio.yaml -y

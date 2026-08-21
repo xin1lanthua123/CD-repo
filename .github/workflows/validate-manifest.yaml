@@ -1,216 +1,181 @@
 name: validate workflow
+
 on:
-  workflow_dispatch:
-      inputs:
-        action:
-            description: " action"
-            required: true
-            default: "dev"
-            type: choice
-            options:
-            - dev
-            - staging
-            - prod
-  # pull_request:
-  #   branches:
-  #     - main
-  # push:
-  #   branches:
-  #     - main
+  pull_request:
+    branches:
+      - main
+      - dev
+  push:
+    branches:
+      - main
+      - dev
+
+permissions:
+  contents: read
 
 concurrency:
   group: gitops-${{ github.ref }}
   cancel-in-progress: true
+
 jobs:
   detect-changes:
     name: Detect Changed Services
     runs-on: ubuntu-latest
+
     outputs:
-      helm-chart: ${{ steps.extract.outputs.services }}
-      helm-chart_changed: ${{ steps.extract.outputs.services_changed }}
+      helm_chart: ${{ steps.extract.outputs.services }}
+      helm_chart_changed: ${{ steps.extract.outputs.services_changed }}
+
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
+
           fetch-depth: 0
-  
-      - name: Paths Filter
-        id: filter
-        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #vv4.0.1
+
+      - id: filter
+        uses: dorny/paths-filter@v4
         with:
           list-files: shell
           filters: |
-            helm-chart:
+            helm_chart:
               - 'helm-chart/**'
-            github-file:
+            github_file:
               - '.github/workflows/validate-manifest.yaml'
 
-      - name: Extract helm chart services
-        id: extract
+      - id: extract
         shell: bash
         run: |
           set -euo pipefail
 
-          HELM_FILES="${{ steps.filter.outputs.helm-chart_files }}"
-          GITHUB_FILES="${{ steps.filter.outputs.github-file_files}}"
+          HELM_FILES="${{ steps.filter.outputs.helm_chart_files }}"
+          GITHUB_FILES="${{ steps.filter.outputs.github_file_files }}"
 
-          if [ -n "$HELM_FILES" ]; then
-
-            MODIFIED_SERVICES=$(
-              echo "$HELM_FILES" \
-                | tr ' ' '\n' \
-                | cut -d'/' -f2 \
-                | sort -u \
-                | jq -R -s -c 'split("\n") | map(select(length>0))'
+          if [[ -n "$HELM_FILES" ]]; then
+            SERVICES=$(
+              echo "$HELM_FILES" |
+              tr ' ' '\n' |
+              cut -d/ -f2 |
+              sort -u |
+              jq -Rsc 'split("\n") | map(select(length>0))'
             )
 
-            SERVICES="$MODIFIED_SERVICES"
-          elif [ -n "$GITHUB_FILES" ]; then
-
-            ALL_SERVICES=$(
-              find services -mindepth 1 -maxdepth 1 -type d -printf "%f\n" \
-                | jq -R -s -c 'split("\n") | map(select(length>0))'
-            )
-
-            SERVICES="$ALL_SERVICES"
-          else
-            SERVICES="[]"
-          fi
-
-          if [ "$SERVICES" != "[]" ]; then
-            echo "services_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "services_changed=false" >> "$GITHUB_OUTPUT"
-          fi
+           elif [[ -n "$GITHUB_FILES" ]]; then
+              SERVICES=$(
+                find helm-chart \
+                  -mindepth 1 \
+                  -maxdepth 1 \
+                  -type d \
+                  -printf "%f\n" |
+                jq -Rsc 'split("\n") | map(select(length > 0))'
+              )
+            else
+              SERVICES="[]"
+            fi
 
           echo "services=$SERVICES" >> "$GITHUB_OUTPUT"
 
-  yaml-lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+          if [[ "$SERVICES" == "[]" ]]; then
+            echo "services_changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "services_changed=true" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Run YAML Lint
-        uses: ibiqlik/action-yamllint@v3
+  secret-scan:
+    name: Secret Scan (Gitleaks)
+    runs-on: ubuntu-latest
+    needs: detect-changes
+
+    steps:
+      - uses: actions/checkout@v4
         with:
-          file_or_dir: .
+          fetch-depth: 0
+
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # yaml-lint:
+  #   runs-on: ubuntu-latest
+  #   needs: detect-changes
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - uses: ibiqlik/action-yamllint@v3
+  #       with:
+  #         file_or_dir: .
+
 
   k8s-scan:
-    name: " K8s manifest scan"
+    name: K8s manifest scan
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Run Checkov on Kubernetes manifests
-        uses: bridgecrewio/checkov-action@v12
-        with:
-          directory: kubernetes-manifest/
-          framework: kubernetes
-          soft_fail: true  # Soft fail for K8s (some checks may not apply)
-          output_format: cli
-
-  helm-check:
-    needs : detect-changes
-    runs-on: ubuntu-latest
-    if: needs.detect-changes.outputs.helm-chart_changed == 'true'
-    strategy:
-      fail-fast: false 
-      matrix:
-        helm-chart: ${{ fromJson(needs.detect-changes.outputs.helm-chart) }}
+    needs: detect-changes
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Helm
-        uses: azure/setup-helm@v4
+      - uses: bridgecrewio/checkov-action@v12
+        with:
+          directory: .
+          framework: kubernetes
+          soft_fail: true
+          output_format: cli
 
-      - name: Helm lint
-        working-directory: helm-chart/${{matrix.helm-chart}}
-        run: |
-            find . -name "Chart.yaml" | while read -r file ; do
-                dir=$(dirname "$file")
-                helm lint $dir
-            done
-
-      - name: Helm template render check
-        working-directory: helm-chart/${{matrix.helm-chart}}
-        run: |
-            find . -name "Chart.yaml"  | while read -r file ; do
-                dir=$(dirname "$file")
-                helm template test $dir > /dev/null
-            done
-
-  release-helm-package:
-    name: " Release helm package"
+  helm-check:
+    name: Check helm configuration
+    needs: detect-changes
+    if: needs.detect-changes.outputs.helm_chart_changed == 'true'
     runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.chart_version.outputs.chart_version }}
-    permissions:
-      packages: write
-      contents: read 
-    needs: 
-      - detect-changes
-      - helm-check
-    if: | 
-      needs.detect-changes.outputs.helm-chart_changed == 'true' &&  
-      github.ref == 'refs/heads/main'
+
     strategy:
-      fail-fast: false 
+      fail-fast: false
       matrix:
-        helm-chart: ${{ fromJson(needs.detect-changes.outputs.helm-chart) }}
+        chart: ${{ fromJson(needs.detect-changes.outputs.helm_chart) }}
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Setup Helm
-      uses: azure/setup-helm@v4
+      - uses: azure/setup-helm@v4
+        with:
+          version: v3.18.0
 
-    - name: Setup yq
-      uses: dcarbone/install-yq-action@v1
-      with:
-        version: v4.47.2
+      - run: |
+          KUBECONFORM_VERSION="0.7.0"
+          curl -fsSL \
+            "https://github.com/yannh/kubeconform/releases/download/v${KUBECONFORM_VERSION}/kubeconform-linux-amd64.tar.gz" \
+            | tar xz
+          sudo mv kubeconform /usr/local/bin/
 
-    - name: Login GHCR
-      run: |
-        echo "${{ secrets.GITHUB_TOKEN }}" | \
-        helm registry login ghcr.io \
-          --username "${{ github.repository_owner }}" \
-          --password-stdin
-
-    - name: Package and push helm chart
-      working-directory: helm-chart/${{ matrix.helm-chart }}
-      id: chart_version
-      run: |
-        set -e
-
-        if [ ! -f "Chart.yaml" ]; then
-          echo "Chart.yaml not found. Failed."
-          exit 1
-        fi
-
-        if [ ! -f "values.yaml" ]; then
-          echo "values.yaml not found. Failed."
-          exit 1
-        fi
-
-        echo "Packaging chart..."
-
-        PACKAGE_FILE=$(helm package . | awk '{print $NF}')
-        CHART_VERSION=$(yq '.version' Chart.yaml)
-
-        echo "chart_version=$CHART_VERSION" >> "$GITHUB_OUTPUT" 
-
-        echo "Pushing ${PACKAGE_FILE}:${CHART_VERSION} to GHCR..."
-
-        helm push "${PACKAGE_FILE}" \
-          oci://ghcr.io/${{ github.repository_owner }}/helm
-        
-        echo "Successfully pushed ${CHART_NAME}:${CHART_VERSION}"
- 
-
-        
-       
       
+      - name: Cache Helm
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/helm
+          key: helm-${{ runner.os }}-${{ hashFiles('helm-chart/**/Chart.lock') }}
+          restore-keys: |
+            helm-${{ runner.os }}-
 
- 
+      - name: Validate Helm Chart
+        working-directory: helm-chart/${{ matrix.chart }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          helm dependency build .
+          helm lint .
+
+          if compgen -G "values*.yaml" > /dev/null; then
+            for values in values*.yaml; do
+              echo "Validating $values"
+
+              helm template test . -f "$values" \
+                | kubeconform \
+                    -strict \
+                    -ignore-missing-schemas
+            done
+          else
+            helm template test . \
+              | kubeconform \
+                  -strict \
+                  -ignore-missing-schemas
+          fi

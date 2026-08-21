@@ -1,0 +1,6 @@
+name: istio-gateway
+repoURL: https://istio-release.storage.googleapis.com/charts
+chart: gateway
+version: 1.30.3
+namespace: istio-system
+valuesFile: addons/istio-gateway/istio-gateway-values.yaml
