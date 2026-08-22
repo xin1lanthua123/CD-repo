@@ -20,7 +20,7 @@ spec:
 
     spec:
       project: default
-
+ 
       sources:
       - repoURL: '{{.repoURL}}'
         chart: '{{.chart}}'
