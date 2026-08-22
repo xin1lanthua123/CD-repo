@@ -23,7 +23,7 @@ spec:
 
     metadata:
 
-      name: "{{ .path.basename }}-dev"
+      name: "{{ .path.basename }}"
 
       annotations:
 
@@ -84,11 +84,11 @@ spec:
         path: "{{ .path.path }}"
         helm:
           valueFiles:
-            - values-dev.yaml
+            - values.yaml
 
       destination:
         server: https://kubernetes.default.svc
-        namespace: online-boutique-dev
+        namespace: online-boutique
 
       syncPolicy:
         automated:
