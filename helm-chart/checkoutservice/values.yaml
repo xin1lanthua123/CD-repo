@@ -80,6 +80,8 @@ securityContext:
 
 checkoutService:
   create: true
+  virtualService:
+    create: true
   name: checkoutservice
   replicas: 2
   autoscaling:

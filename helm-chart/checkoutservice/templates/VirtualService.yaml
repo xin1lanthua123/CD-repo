@@ -1,11 +1,11 @@
+{{- if .Values.checkoutService.virtualService.create }}
 apiVersion: networking.istio.io/v1
 kind: VirtualService
 metadata:
-  name:  {{ .Values.checkoutService.name }}-vs
-
+  name: {{ .Values.checkoutService.name }}-vs
 spec:
   hosts:
-    -  {{ .Values.checkoutService.name }}
+    - {{ .Values.checkoutService.name }}
 
   http:
     - name: primary-route
@@ -23,13 +23,13 @@ spec:
       timeout: 5s
 
       route:
-
         - destination:
-            host:  {{ .Values.checkoutService.name }}
+            host: {{ .Values.checkoutService.name }}
             subset: stable
           weight: 100
 
         - destination:
-            host:  {{ .Values.checkoutService.name }}
+            host: {{ .Values.checkoutService.name }}
             subset: canary
           weight: 0
+{{- end }}
