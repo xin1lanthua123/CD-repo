@@ -239,7 +239,7 @@ spec:
       trafficRouting:
         istio:
           virtualService:
-            name:  {{ .Values.frontend.name }}-vr
+            name:  {{ .Values.frontend.name }}
             routes:
             - primary-route
           destinationRule:

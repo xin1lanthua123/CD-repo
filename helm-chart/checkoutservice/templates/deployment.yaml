@@ -215,7 +215,7 @@ spec:
       trafficRouting:
         istio:
           virtualService:
-            name: {{ .Values.checkoutService.name }}-vr
+            name: {{ .Values.checkoutService.name }}-vs
             routes:
               - primary-route
           destinationRule:
