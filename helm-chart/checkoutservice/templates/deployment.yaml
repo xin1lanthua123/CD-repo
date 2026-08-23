@@ -158,14 +158,18 @@ spec:
 
           ports:
             - containerPort: 5050
+              protocol: TCP
 
           readinessProbe:
             grpc:
               port: 5050
+              service: ''
+              
 
           livenessProbe:
             grpc:
               port: 5050
+              service: ''
 
           env:
             - name: PORT
