@@ -1,4 +1,3 @@
-
 {{- if .Values.frontend.create }}
 {{- if .Values.frontend.virtualService.create }}
 apiVersion: networking.istio.io/v1alpha3
@@ -11,24 +10,25 @@ spec:
   hosts:
   {{- toYaml . | nindent 2 }}
   {{- end }}
+
   gateways:
   - {{ .Values.frontend.virtualService.gateway.namespace }}/{{ .Values.frontend.virtualService.gateway.name }}
+
   http:
   - name: primary-route
-
     timeout: 5s
 
     retries:
       attempts: 3
       perTryTimeout: 2s
-
       retryOn: >
         gateway-error,
         connect-failure,
         refused-stream,
         unavailable,
         reset
-  - route:
+
+    route:
     - destination:
         host: {{ .Values.frontend.name }}
         port:
