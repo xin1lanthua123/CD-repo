@@ -24,5 +24,11 @@ spec:
       route:
         - destination:
             host: {{ .Values.frontend.name }}
-            port:
-              number: 80
+            subset: stable
+          weight: 100
+
+        - destination:
+            host: {{ .Values.frontend.name }}
+            subset: canary
+          weight: 0
+
