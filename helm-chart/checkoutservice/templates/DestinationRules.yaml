@@ -30,9 +30,6 @@ spec:
   subsets:
 
     - name: stable
-      labels:
-        rollouts-pod-template-hash: stable
 
     - name: canary
-      labels:
-        rollouts-pod-template-hash: canary
+      
